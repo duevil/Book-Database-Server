@@ -1,3 +1,6 @@
+### sonar lint ###
+.idea/sonarlint/issuestore
+
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
