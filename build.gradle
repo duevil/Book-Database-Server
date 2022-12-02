@@ -7,12 +7,13 @@ subprojects {
     apply plugin: 'application'
 
     group 'de.mi'
-    version '0.1.1' // TODO: update version number on commit
+    version '0.1.2' // TODO: update version number on commit
 
     sourceCompatibility = '17'
     targetCompatibility = '17'
 
     ext {
+        jdbcVersion = '3.1.0'
         junitVersion = '5.9.0'
         jerseyVersion = '3.1.0'
         grizzlyVersion = '4.0.0'
