@@ -1,19 +1,44 @@
 plugins {
-    id 'java'
+    id 'org.openjfx.javafxplugin' version '0.0.10' apply false
 }
 
-group 'de.mi'
-version '1.0-SNAPSHOT'
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'application'
 
-repositories {
-    mavenCentral()
-}
+    group 'de.mi'
+    version '0.1.1' // TODO: update version number on commit
 
-dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-}
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
 
-test {
-    useJUnitPlatform()
+    ext {
+        junitVersion = '5.9.0'
+        jerseyVersion = '3.1.0'
+        grizzlyVersion = '4.0.0'
+        restVersion = '3.1.0'
+        jaxbVersion = '4.0.0'
+    }
+
+    run {
+        standardInput = System.in
+        standardOutput = System.out
+    }
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+    }
+
+    test {
+        useJUnitPlatform()
+    }
 }
