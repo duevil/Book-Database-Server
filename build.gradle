@@ -13,6 +13,7 @@ subprojects {
     targetCompatibility = '17'
 
     ext {
+        jdbcVersion = '8.0.31'
         junitVersion = '5.9.0'
         jerseyVersion = '3.1.0'
         grizzlyVersion = '4.0.0'

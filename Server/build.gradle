@@ -11,6 +11,8 @@ jar {
 }
 
 dependencies {
+    //noinspection VulnerableLibrariesLocal
+    implementation "mysql:mysql-connector-java:${jdbcVersion}"
     implementation "org.glassfish.jersey.core:jersey-server:${jerseyVersion}"
     implementation "org.glassfish.jersey.inject:jersey-hk2:${jerseyVersion}"
     implementation "org.glassfish.grizzly:grizzly-http-server:${grizzlyVersion}"

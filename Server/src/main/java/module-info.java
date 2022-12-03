@@ -1,1 +1,3 @@
-module de.mi.server {}
+module de.mi.server {
+    requires java.sql;
+}
