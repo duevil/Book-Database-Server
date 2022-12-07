@@ -49,25 +49,18 @@ public class SQLQueryExecutor {
         return mapList;
     }
 
-    public List<Map<String, Object>> getMapList() {
-        try {
-            if (statement instanceof PreparedStatement) {
-                return Collections.unmodifiableList(getMapList(statement, null));
-            } else {
-                try (
-                        var con = DBConnection.get().connection();
-                        var stmt = con.createStatement()
-                ) {
-                    return Collections.unmodifiableList(getMapList(stmt, sql));
-                }
-            }
-        } catch (SQLException e) {
-            SQLExceptionHandler.handle(e);
-            return Collections.emptyList();
+    public List<Map<String, Object>> getMapList() throws SQLException {
+        if (statement instanceof PreparedStatement) {
+            return Collections.unmodifiableList(getMapList(statement, null));
+        } else try (
+                var con = DBConnection.get().connection();
+                var stmt = con.createStatement()
+        ) {
+            return Collections.unmodifiableList(getMapList(stmt, sql));
         }
     }
 
-    public <T> List<T> getMappedList(Function<Map<String, Object>, T> mapper) {
+    public <T> List<T> getMappedList(Function<Map<String, Object>, T> mapper) throws SQLException {
         return getMapList().stream().map(mapper).toList();
     }
 }
