@@ -1,7 +1,7 @@
 package de.mi.db;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -15,7 +15,7 @@ public final class SQLScriptRunner {
     public static void runFile(Connection connection, Path path) throws IOException {
         try (
                 var statement = connection.createStatement();
-                var scanner = new Scanner(path, Charset.defaultCharset())
+                var scanner = new Scanner(path, StandardCharsets.UTF_8)
         ) {
             // save original auto commit value to restore it later
             var origAutoCommit = connection.getAutoCommit();
@@ -25,7 +25,7 @@ public final class SQLScriptRunner {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 // ignore blank line or line comments
-                if (!line.startsWith("--") && !line.isBlank()) stringBuilder.append(line);
+                if (!line.startsWith("--") && !line.startsWith("#") &&!line.isBlank()) stringBuilder.append(line);
                 // execute a sql command when finding a terminating semicolon
                 if (!stringBuilder.isEmpty() && line.endsWith(";")) {
                     statement.execute(stringBuilder.toString());

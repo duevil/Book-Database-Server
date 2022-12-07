@@ -7,7 +7,7 @@ subprojects {
     apply plugin: 'application'
 
     group 'de.mi'
-    version '0.1.1' // TODO: update version number on commit
+    version '0.1.5' // TODO: update version number on commit
 
     sourceCompatibility = '17'
     targetCompatibility = '17'
@@ -35,6 +35,8 @@ subprojects {
     }
 
     dependencies {
+        implementation 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.14.1'
+        implementation 'org.glassfish.jersey.media:jersey-media-json-jackson:3.1.0'
         testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
     }

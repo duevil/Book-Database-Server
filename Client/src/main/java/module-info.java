@@ -1,1 +1,0 @@
-module de.mi.client {}
