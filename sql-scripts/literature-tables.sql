@@ -5,8 +5,7 @@ CREATE TABLE books
     title     VARCHAR(100) NOT NULL,
     publisher VARCHAR(100) NOT NULL,
     year      SMALLINT     NOT NULL,
-    pages     SMALLINT     NOT NULL,
-    keywords  VARCHAR(1000)
+    pages     SMALLINT     NOT NULL
 );
 
 DROP TABLE IF EXISTS subfields;
