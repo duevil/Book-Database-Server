@@ -6,7 +6,6 @@ public class Main {
     private static final String SERVER_NAME = "informatik";
     public static void main(String[] args) {
         // TODO: start server
-        // DBConnection.open("minf", "prog3");
         Server.start(HOST, PORT, SERVER_NAME, LiteratureRest.getApplicationClass());
     }
 }

@@ -8,7 +8,8 @@ public record Book  (
             Set<Author> authors,
             String publisher,
             int year,
-            int pages
+            int pages,
+            Set<Subfield> subfields
 ) {
 
     @Override

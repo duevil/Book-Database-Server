@@ -12,9 +12,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -76,13 +76,13 @@ public final class BookGenerator {
 
     @SuppressWarnings("java:S2096")
     public static void main(String[] args) throws IOException {
-        List<Map.Entry<Book, List<Subfield>>> bookList = generateBooks();
+        List<Book> bookList = generateBooks();
         writeToSQLFile(bookList);
         printBookList(bookList);
     }
 
-    private static List<Map.Entry<Book, List<Subfield>>> generateBooks() {
-        var bookList = new LinkedList<Map.Entry<Book, List<Subfield>>>();
+    private static List<Book> generateBooks() {
+        var bookList = new LinkedList<Book>();
         while (true) {
             System.out.println("-- Subfields: ");
             var subfields = new ArrayList<>(List.of(SUBFIELDS));
@@ -92,12 +92,12 @@ public final class BookGenerator {
             System.out.print("-- Enter book title (or 0 to exit): ");
             if (SCANNER.hasNextInt() && SCANNER.nextInt() == 0) break;
             String title = SCANNER.nextLine();
-            bookList.add(getBookWithSubfields(title, subfields));
+            bookList.add(getBook(title, Set.copyOf(subfields)));
         }
         return bookList;
     }
 
-    private static Map.Entry<Book, List<Subfield>> getBookWithSubfields(String title, List<Subfield> subfields) {
+    private static Book getBook(String title, Set<Subfield> subfields) {
         bookID += 1;
         var authors = Stream.generate(() -> {
             var name = Faker.instance().name();
@@ -106,14 +106,12 @@ public final class BookGenerator {
         }).limit(RND.nextInt(1, 7)).collect(Collectors.toSet());
         int year = RND.nextInt(1920, 2023);
         int pages = RND.nextInt(10, 501);
-        var book = new Book(bookID, title, authors, Faker.instance().book().publisher(), year, pages);
-        return Map.of(book, subfields).entrySet().iterator().next();
+        return new Book(bookID, title, authors, Faker.instance().book().publisher(), year, pages, subfields);
     }
 
-    private static void writeToSQLFile(List<Map.Entry<Book, List<Subfield>>> bookList) throws IOException {
+    private static void writeToSQLFile(List<Book> bookList) throws IOException {
         try (var writer = Files.newBufferedWriter(GENERATED_FILE_PATH)) {
-            String sql = bookList.stream().map((Map.Entry<Book, List<Subfield>> e) -> {
-                Book b = e.getKey();
+            String sql = bookList.stream().map((Book b) -> {
                 String authors = b.authors().stream().map(a -> String.format(
                         AUTHOR_SQL_TEMPLATE,
                         a.id(),
@@ -122,7 +120,7 @@ public final class BookGenerator {
                         a.id(),
                         b.id()
                 )).collect(Collectors.joining());
-                String subfields = e.getValue().stream().map(s -> String.format(
+                String subfields = b.subfields().stream().map(s -> String.format(
                         SUBFIELD_SQL_TEMPLATE,
                         b.id(),
                         s.id()
@@ -143,25 +141,22 @@ public final class BookGenerator {
         }
     }
 
-    private static void printBookList(List<Map.Entry<Book, List<Subfield>>> bookList) {
-        bookList.forEach((Map.Entry<Book, List<Subfield>> e) -> {
-            Book b = e.getKey();
-            System.out.printf(
-                    PRINT_TEMPLATE,
-                    b.id(),
-                    b.title(),
-                    b.authors()
-                            .stream()
-                            .map(a -> a.firstName() + " " + a.lastName())
-                            .collect(Collectors.joining(", ")),
-                    b.publisher(),
-                    b.year(),
-                    b.pages(),
-                    e.getValue()
-                            .stream()
-                            .map(Subfield::name)
-                            .collect(Collectors.joining(", "))
-            );
-        });
+    private static void printBookList(List<Book> bookList) {
+        bookList.forEach((Book b) -> System.out.printf(
+                PRINT_TEMPLATE,
+                b.id(),
+                b.title(),
+                b.authors()
+                        .stream()
+                        .map(a -> a.firstName() + " " + a.lastName())
+                        .collect(Collectors.joining(", ")),
+                b.publisher(),
+                b.year(),
+                b.pages(),
+                b.subfields()
+                        .stream()
+                        .map(Subfield::name)
+                        .collect(Collectors.joining(", "))
+        ));
     }
 }

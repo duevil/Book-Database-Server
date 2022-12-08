@@ -17,9 +17,8 @@ public final class DBConnection {
     private static final String SQL_SCRIPTS_PATH = "sql-scripts";
     private static final Path SCHEMA_SQL = Path.of(SQL_SCRIPTS_PATH, "informatik-schema.sql");
     private static final Path TABLE_SQL = Path.of(SQL_SCRIPTS_PATH, "literature-tables.sql");
-    private static final Path BOOK_DATA_SQL = Path.of(SQL_SCRIPTS_PATH, "books-data.sql");
-    private static final Path SUBFIELDS_DATA_SQL = Path.of(SQL_SCRIPTS_PATH, "subfields-data.sql");
-    private static final Path AUTHORS_DATA_SQL = Path.of(SQL_SCRIPTS_PATH, "authors-data.sql");
+    private static final Path DATA_SQL = Path.of(SQL_SCRIPTS_PATH, "literature-data.sql");
+    private static final Path SUBFIELDS_SQL = Path.of(SQL_SCRIPTS_PATH, "subfields-data.sql");
     private static final DBConnection INSTANCE;
 
     static {
@@ -48,9 +47,8 @@ public final class DBConnection {
         }
         connection = DriverManager.getConnection(BASE_URL + '/' + DATABASE_NAME, user, password);
         SQLScriptRunner.runFile(connection, TABLE_SQL);
-        SQLScriptRunner.runFile(connection, BOOK_DATA_SQL);
-        SQLScriptRunner.runFile(connection, SUBFIELDS_DATA_SQL);
-        SQLScriptRunner.runFile(connection, AUTHORS_DATA_SQL);
+        SQLScriptRunner.runFile(connection, SUBFIELDS_SQL);
+        SQLScriptRunner.runFile(connection, DATA_SQL);
     }
 
     public static DBConnection get() {
