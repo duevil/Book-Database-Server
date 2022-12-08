@@ -84,12 +84,12 @@ public final class BookGenerator {
     private static List<Map.Entry<Book, List<Subfield>>> generateBooks() {
         var bookList = new LinkedList<Map.Entry<Book, List<Subfield>>>();
         while (true) {
-            System.out.println("| Subfields: ");
+            System.out.println("-- Subfields: ");
             var subfields = new ArrayList<>(List.of(SUBFIELDS));
             int numSubfields = RND.nextInt(1, 5);
             while (subfields.size() > numSubfields) subfields.remove(RND.nextInt(subfields.size()));
             subfields.stream().map(Subfield::name).forEach(System.out::println);
-            System.out.print("| Enter book title (or 0 to exit): ");
+            System.out.print("-- Enter book title (or 0 to exit): ");
             if (SCANNER.hasNextInt() && SCANNER.nextInt() == 0) break;
             String title = SCANNER.nextLine();
             bookList.add(getBookWithSubfields(title, subfields));
