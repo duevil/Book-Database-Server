@@ -1,4 +1,4 @@
-package de.mi.db;
+package de.mi.sql;
 
 import java.io.PrintStream;
 import java.sql.SQLException;

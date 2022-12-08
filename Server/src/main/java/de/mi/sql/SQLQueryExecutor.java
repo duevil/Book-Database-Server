@@ -1,4 +1,7 @@
-package de.mi.db;
+package de.mi.sql;
+
+import de.mi.mapper.Mapper;
+import de.mi.server.DBConnection;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -9,7 +12,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 
 public class SQLQueryExecutor {
     private final Statement statement;
@@ -49,7 +51,7 @@ public class SQLQueryExecutor {
         return mapList;
     }
 
-    public List<Map<String, Object>> getMapList() throws SQLException {
+    private List<Map<String, Object>> getMapList() throws SQLException {
         if (statement instanceof PreparedStatement) {
             return Collections.unmodifiableList(getMapList(statement, null));
         } else try (
@@ -60,7 +62,7 @@ public class SQLQueryExecutor {
         }
     }
 
-    public <T> List<T> getMappedList(Function<Map<String, Object>, T> mapper) throws SQLException {
+    public <T> List<T> getMappedList(Mapper<T> mapper) throws SQLException {
         return getMapList().stream().map(mapper).toList();
     }
 }
