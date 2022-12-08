@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@SuppressWarnings("java:S109")
 public final class BookGenerator {
     private static final Random RND = new Random();
     private static final Scanner SCANNER = new Scanner(System.in, Charset.defaultCharset());
@@ -82,22 +84,19 @@ public final class BookGenerator {
     private static List<Map.Entry<Book, List<Subfield>>> generateBooks() {
         var bookList = new LinkedList<Map.Entry<Book, List<Subfield>>>();
         while (true) {
-            System.out.print("Enter book title (or 0 to exit): ");
+            System.out.println("| Subfields: ");
+            var subfields = new ArrayList<>(List.of(SUBFIELDS));
+            int numSubfields = RND.nextInt(1, 5);
+            while (subfields.size() > numSubfields) subfields.remove(RND.nextInt(subfields.size()));
+            subfields.stream().map(Subfield::name).forEach(System.out::println);
+            System.out.print("| Enter book title (or 0 to exit): ");
             if (SCANNER.hasNextInt() && SCANNER.nextInt() == 0) break;
             String title = SCANNER.nextLine();
-            System.out.print("Enter subfields (1-15): ");
-            var subfields = new LinkedList<Subfield>();
-            try (var scanner = new Scanner(SCANNER.nextLine())) {
-                while (scanner.hasNext()) {
-                    subfields.add(SUBFIELDS[Integer.parseInt(scanner.next()) - 1]);
-                }
-            }
             bookList.add(getBookWithSubfields(title, subfields));
         }
         return bookList;
     }
 
-    @SuppressWarnings("java:S109")
     private static Map.Entry<Book, List<Subfield>> getBookWithSubfields(String title, List<Subfield> subfields) {
         bookID += 1;
         var authors = Stream.generate(() -> {
@@ -121,16 +120,16 @@ public final class BookGenerator {
                         a.firstName().replace("'", "''"),
                         a.lastName().replace("'", "''"),
                         a.id(),
-                        e.getKey().id()
+                        b.id()
                 )).collect(Collectors.joining());
                 String subfields = e.getValue().stream().map(s -> String.format(
                         SUBFIELD_SQL_TEMPLATE,
-                        s.id(),
-                        e.getKey().id()
+                        b.id(),
+                        s.id()
                 )).collect(Collectors.joining());
                 return String.format(
                         BOOK_SQL_TEMPLATE,
-                        e.getKey().id(),
+                        b.id(),
                         b.title().replace("'", "''"),
                         b.publisher().replace("'", "''"),
                         b.year(),
