@@ -41,10 +41,10 @@ public final class LiteratureQuery {
     private static final SQLQueryExecutor BOOK_SUBFIELD_EXECUTOR;
     private static final SQLQueryExecutor BOOK_AUTHOR_EXECUTOR;
     private static final BookFilter EMPTY_FILTER = new BookFilterBuilder().build();
-    private static final Set<Subfield> SUBFIELDS;
+    private static final Set<Subfield> SUBFIELDS = new HashSet<>();
 
     static {
-        var con = DBConnection.get().connection();
+        final var con = DBConnection.get().connection();
         SQLQueryExecutor bookSubfieldExecutor = null;
         SQLQueryExecutor bookAuthorExecutor = null;
         try {
@@ -60,23 +60,21 @@ public final class LiteratureQuery {
     }
 
     static {
-        Set<Subfield> subfields = Collections.emptySet();
         try {
             var con = DBConnection.get().connection();
             var stmt = con.prepareStatement("SELECT id, name FROM subfields");
             var queryExecutor = SQLQueryExecutor.forPreparedStatement(stmt);
-            subfields = Set.copyOf(queryExecutor.getMappedList(LiteratureMapper.SUBFIELD_MAPPER));
+            SUBFIELDS.addAll(queryExecutor.getMappedList(LiteratureMapper.SUBFIELD_MAPPER));
         } catch (SQLException e) {
             SQLExceptionHandler.handle(e);
         }
-        SUBFIELDS = subfields;
     }
 
     private LiteratureQuery() {
     }
 
     public static Set<Subfield> getSubfields() {
-        return SUBFIELDS;
+        return Collections.unmodifiableSet(SUBFIELDS);
     }
 
     public static Set<Book> queryBooks() throws SQLException {
@@ -84,7 +82,7 @@ public final class LiteratureQuery {
     }
 
     public static Set<Book> queryBooks(BookFilter filter) throws SQLException {
-        String bookSQL = String.format(
+        final String bookSQL = String.format(
                 BOOK_SQL,
                 filter.titleSearch().orElse(""),
                 filter.yearRange().min(),
@@ -97,14 +95,23 @@ public final class LiteratureQuery {
                         .collect(Collectors.joining(", ")),
                 filter.authorSearch().orElse("")
         );
-        SQLQueryExecutor executor = SQLQueryExecutor.forSQLString(bookSQL);
-        Set<Book> books = new HashSet<>();
+        final SQLQueryExecutor executor = SQLQueryExecutor.forSQLString(bookSQL);
+        final Set<Book> books = new HashSet<>();
         for (Book b : executor.getMappedList(LiteratureMapper.BOOK_MAPPER)) {
             BOOK_AUTHOR_EXECUTOR.getPreparedStatement().setInt(1, b.id());
             BOOK_SUBFIELD_EXECUTOR.getPreparedStatement().setInt(1, b.id());
-            b.authors().addAll(BOOK_AUTHOR_EXECUTOR.getMappedList(LiteratureMapper.AUTHOR_MAPPER));
-            b.subfields().addAll(BOOK_SUBFIELD_EXECUTOR.getMappedList(LiteratureMapper.SUBFIELD_MAPPER));
+            var authors = BOOK_AUTHOR_EXECUTOR.getMappedList(LiteratureMapper.AUTHOR_MAPPER);
+            var subfields = BOOK_SUBFIELD_EXECUTOR.getMappedList(LiteratureMapper.SUBFIELD_MAPPER);
+            books.add(new Book(
+                    b.id(),
+                    b.title(),
+                    Set.copyOf(authors),
+                    b.publisher(),
+                    b.year(),
+                    b.pages(),
+                    Set.copyOf(subfields)
+            ));
         }
-        return books;
+        return Collections.unmodifiableSet(books);
     }
 }

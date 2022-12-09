@@ -2,7 +2,6 @@ package de.mi.mapper;
 
 import de.mi.common.Book;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 
@@ -22,11 +21,11 @@ class BookMapper implements Mapper<Book> {
                 .map(id -> new Book(
                         id,
                         (String) values.get("title"),
-                        new HashSet<>(),
+                        null,
                         (String) values.get("publisher"),
                         (Integer) values.get("year"),
                         (Integer) values.get("pages"),
-                        new HashSet<>()
+                        null
                 ))
                 .orElse(NULL_BOOK);
     }
