@@ -8,17 +8,27 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
 
-/**
- * Utility-Klasse zum Ausführen von SQL-Scripts
- *
- * @author Malte Kasolowsky <code>m30114</code>
- */
-public final class SQLScriptRunner {
+public class SQLScriptRunner extends SQLExecutor {
+    private final Path path;
 
-    /**
-     * Privater Konstruktor; Instanziierung für Utility-Klasse nicht nötig
-     */
-    private SQLScriptRunner() {
+    SQLScriptRunner(Path path) {
+        this.path = path;
+    }
+
+    @Override
+    public void execute() throws SQLException {
+        var sb = new StringBuilder();
+        try (var scanner = new Scanner(path, Charset.defaultCharset())) {
+            Statement statement = getStatement();
+            Connection connection = statement.getConnection();
+            // save original auto commit value to restore it later
+            boolean origAutoCommit = connection.getAutoCommit();
+            executionLoop(connection, statement, scanner, sb);
+            // restore previous auto commit state
+            connection.setAutoCommit(origAutoCommit);
+        } catch (IOException e) {
+            throw new ExecutionException(e);
+        }
     }
 
     /**
@@ -32,7 +42,10 @@ public final class SQLScriptRunner {
      * @param connection Die Connection zu der Datenbank, für die das Script ausgeführt werden soll
      * @param path       Der Path zur auszuführenden Script-Datei
      * @throws IOException Wenn beim Öffnen der Datei in I/O-Fehler auftritt
+     * @deprecated Klasse wurde als Implementierung von {@link SQLExecutor} ge-refactored;
+     * die Funktionalität dieser Methode wurde in {@link SQLScriptRunner#execute()} übernommen
      */
+    @Deprecated(since = "0.2.7")
     public static void runFile(Connection connection, Path path) throws IOException {
         try (
                 var statement = connection.createStatement();
@@ -60,7 +73,9 @@ public final class SQLScriptRunner {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 // ignore blank line or line comments
-                if (!line.startsWith("--") && !line.startsWith("#") && !line.isBlank()) sb.append(line).append(' ');
+                if (!line.startsWith("--") &&
+                    !line.startsWith("#") &&
+                    !line.isBlank()) sb.append(line).append(' ');
                 // execute a sql command when finding a terminating semicolon
                 if (!sb.isEmpty() && line.endsWith(";")) {
                     statement.execute(sb.toString());
@@ -72,5 +87,11 @@ public final class SQLScriptRunner {
             throw e;
         }
         connection.commit();
+    }
+
+    public static final class ExecutionException extends RuntimeException {
+        ExecutionException(Throwable cause) {
+            super(cause);
+        }
     }
 }

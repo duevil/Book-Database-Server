@@ -1,7 +1,7 @@
 package de.mi.db;
 
 import de.mi.sql.SQLExceptionHandler;
-import de.mi.sql.SQLScriptRunner;
+import de.mi.sql.SQLExecutorFactory;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -45,22 +45,30 @@ public final class DBConnection {
 
     private DBConnection(String user, String password) throws SQLException, IOException {
         try (Connection con = DriverManager.getConnection(BASE_URL, "root", null)) {
-            SQLScriptRunner.runFile(con, SCHEMA_SQL);
+            SQLExecutorFactory.createScriptRunner(SCHEMA_SQL)
+                    .forStatement(con.createStatement())
+                    .get()
+                    .execute();
         }
         connection = DriverManager.getConnection(BASE_URL + '/' + DATABASE_NAME, user, password);
-        SQLScriptRunner.runFile(connection, TABLE_SQL);
-        SQLScriptRunner.runFile(connection, SUBFIELDS_SQL);
-        SQLScriptRunner.runFile(connection, DATA_SQL);
+        SQLExecutorFactory.createScriptRunner(TABLE_SQL)
+                .forStatement(connection.createStatement())
+                .get()
+                .execute();
+        SQLExecutorFactory.createScriptRunner(SUBFIELDS_SQL)
+                .forStatement(connection.createStatement())
+                .get()
+                .execute();
+        SQLExecutorFactory.createScriptRunner(DATA_SQL)
+                .forStatement(connection.createStatement())
+                .get()
+                .execute();
     }
 
     public static DBConnection get() {
         if (INSTANCE == null)
             throw new IllegalStateException("no connection to a database could was established");
         return INSTANCE;
-    }
-
-    public Connection connection() {
-        return connection;
     }
 
     public static PreparedStatement prepareStatement(String sql) throws SQLException {

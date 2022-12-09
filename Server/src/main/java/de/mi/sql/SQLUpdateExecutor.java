@@ -3,7 +3,7 @@ package de.mi.sql;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public final class SQLUpdateExecutor extends SQLExecutor {
+public class SQLUpdateExecutor extends SQLExecutor {
 
     SQLUpdateExecutor() {
     }

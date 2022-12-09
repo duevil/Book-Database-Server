@@ -10,7 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public final class SQLQueryExecutor extends SQLExecutor {
+public class SQLQueryExecutor extends SQLExecutor {
     private final List<Map<String, Object>> queryResult = new LinkedList<>();
 
     SQLQueryExecutor() {
