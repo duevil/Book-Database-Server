@@ -1,35 +1,32 @@
 package de.mi.sql;
 
 import de.mi.mapper.Mapper;
-import de.mi.server.DBConnection;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
-public final class SQLQueryExecutor {
-    private final Statement statement;
-    private final String sql;
+public final class SQLQueryExecutor extends SQLExecutor {
+    private final List<Map<String, Object>> queryResult = new LinkedList<>();
 
-    private SQLQueryExecutor(Statement statement, String sql) {
-        this.statement = statement;
-        this.sql = sql;
+    SQLQueryExecutor() {
+        super();
     }
 
-    private static List<Map<String, Object>> getMapList(Statement statement, String sql) throws SQLException {
+    @Override
+    public void execute() throws SQLException {
+        var statement = getStatement();
         var resultSet = statement instanceof PreparedStatement preparedStatement
                 ? preparedStatement.executeQuery()
-                : statement.executeQuery(sql);
+                : statement.executeQuery(getSql());
         var resultSetMetaData = resultSet.getMetaData();
         var typeMap = statement.getConnection().getTypeMap();
         var columnCount = resultSetMetaData.getColumnCount();
-        var mapList = new LinkedList<Map<String, Object>>();
+        queryResult.clear();
         while (resultSet.next()) {
             var map = new HashMap<String, Object>(columnCount);
             for (int i = 1; i <= columnCount; i++) {
@@ -38,42 +35,12 @@ public final class SQLQueryExecutor {
                         resultSet.getObject(i, typeMap)
                 );
             }
-            mapList.add(Collections.unmodifiableMap(map));
-        }
-        return mapList;
-    }
-
-    public static SQLQueryExecutor forPreparedStatement(PreparedStatement statement) {
-        return new SQLQueryExecutor(
-                Objects.requireNonNull(statement, "prepared statement"),
-                null
-        );
-    }
-
-    public static SQLQueryExecutor forSQLString(String sql) {
-        return new SQLQueryExecutor(
-                null,
-                Objects.requireNonNull(sql, "sql string")
-        );
-    }
-
-    private List<Map<String, Object>> getMapList() throws SQLException {
-        if (statement instanceof PreparedStatement) {
-            return Collections.unmodifiableList(getMapList(statement, null));
-        } else try (
-                var con = DBConnection.get().connection();
-                var stmt = con.createStatement()
-        ) {
-            return Collections.unmodifiableList(getMapList(stmt, sql));
+            queryResult.add(Collections.unmodifiableMap(map));
         }
     }
 
     public <T> List<T> getMappedList(Mapper<T> mapper) throws SQLException {
-        return getMapList().stream().map(mapper).toList();
-    }
-
-    public PreparedStatement getPreparedStatement() {
-        if (statement instanceof PreparedStatement preparedStatement) return preparedStatement;
-        else throw new IllegalCallerException("executor was not created using a prepared statement");
+        execute();
+        return queryResult.stream().map(mapper).toList();
     }
 }

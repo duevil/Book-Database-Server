@@ -1,4 +1,4 @@
-package de.mi.server;
+package de.mi.db;
 
 import de.mi.sql.SQLExceptionHandler;
 import de.mi.sql.SQLScriptRunner;
@@ -8,7 +8,9 @@ import java.io.PrintStream;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public final class DBConnection {
     private static final PrintStream OUT = System.err;
@@ -53,11 +55,19 @@ public final class DBConnection {
 
     public static DBConnection get() {
         if (INSTANCE == null)
-            throw new IllegalStateException("no connection to a database could have been established");
+            throw new IllegalStateException("no connection to a database could was established");
         return INSTANCE;
     }
 
     public Connection connection() {
         return connection;
+    }
+
+    public static PreparedStatement prepareStatement(String sql) throws SQLException {
+        return get().connection.prepareStatement(sql);
+    }
+
+    public static Statement createStatement() throws SQLException {
+        return get().connection.createStatement();
     }
 }

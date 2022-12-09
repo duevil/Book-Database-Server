@@ -1,11 +1,13 @@
-package de.mi.sql;
+package de.mi.db;
 
 import de.mi.common.Book;
 import de.mi.common.BookFilter;
 import de.mi.common.BookFilterBuilder;
 import de.mi.common.Subfield;
 import de.mi.mapper.LiteratureMapper;
-import de.mi.server.DBConnection;
+import de.mi.sql.SQLExceptionHandler;
+import de.mi.sql.SQLExecutorFactory;
+import de.mi.sql.SQLQueryExecutor;
 
 import java.sql.SQLException;
 import java.util.Collections;
@@ -30,28 +32,27 @@ public final class LiteratureQuery {
                                   JOIN book_authors ba ON a.id = ba.author_id
                          WHERE ba.book_id = books.id
                            AND LOWER(CONCAT_WS(a.first_name, a.last_name)) LIKE '%%%s%%')""";
-    private static final String BOOK_AUTHOR_SQL = """
-            SELECT id, first_name, last_name
-            FROM authors JOIN book_authors ON id = author_id
-            WHERE book_id = ?""";
-    private static final String BOOK_SUBFIELD_SQL = """
-            SELECT id, name
-            FROM subfields JOIN book_subfields ON id = subfield_id
-            WHERE book_id = ?""";
+    private static final String BOOK_AUTHOR_SQL =
+            "SELECT id, first_name, last_name FROM authors JOIN book_authors ON id = author_id WHERE book_id = ?";
+    private static final String BOOK_SUBFIELD_SQL =
+            "SELECT id, name FROM subfields JOIN book_subfields ON id = subfield_id WHERE book_id = ?";
     private static final SQLQueryExecutor BOOK_SUBFIELD_EXECUTOR;
     private static final SQLQueryExecutor BOOK_AUTHOR_EXECUTOR;
     private static final BookFilter EMPTY_FILTER = new BookFilterBuilder().build();
     private static final Set<Subfield> SUBFIELDS = new HashSet<>();
 
     static {
-        final var con = DBConnection.get().connection();
         SQLQueryExecutor bookSubfieldExecutor = null;
         SQLQueryExecutor bookAuthorExecutor = null;
         try {
-            var bookSubfieldStatement = con.prepareStatement(BOOK_SUBFIELD_SQL);
-            var bookAuthorStatement = con.prepareStatement(BOOK_AUTHOR_SQL);
-            bookSubfieldExecutor = SQLQueryExecutor.forPreparedStatement(bookSubfieldStatement);
-            bookAuthorExecutor = SQLQueryExecutor.forPreparedStatement(bookAuthorStatement);
+            var bookSubfieldStatement = DBConnection.prepareStatement(BOOK_SUBFIELD_SQL);
+            var bookAuthorStatement = DBConnection.prepareStatement(BOOK_AUTHOR_SQL);
+            bookSubfieldExecutor = SQLExecutorFactory.createQuery()
+                    .forPreparedStatement(bookSubfieldStatement)
+                    .get();
+            bookAuthorExecutor = SQLExecutorFactory.createQuery()
+                    .forPreparedStatement(bookAuthorStatement)
+                    .get();
         } catch (SQLException e) {
             SQLExceptionHandler.handle(e);
         }
@@ -61,10 +62,13 @@ public final class LiteratureQuery {
 
     static {
         try {
-            var con = DBConnection.get().connection();
-            var stmt = con.prepareStatement("SELECT id, name FROM subfields");
-            var queryExecutor = SQLQueryExecutor.forPreparedStatement(stmt);
-            SUBFIELDS.addAll(queryExecutor.getMappedList(LiteratureMapper.SUBFIELD_MAPPER));
+            var subfieldSQL = "SELECT id, name FROM subfields";
+            SQLQueryExecutor queryExecutor = SQLExecutorFactory.createQuery()
+                    .forStatement(DBConnection.createStatement())
+                    .forSqlString(subfieldSQL)
+                    .get();
+            var subfields = queryExecutor.getMappedList(LiteratureMapper.SUBFIELD_MAPPER);
+            SUBFIELDS.addAll(subfields);
         } catch (SQLException e) {
             SQLExceptionHandler.handle(e);
         }
@@ -95,9 +99,13 @@ public final class LiteratureQuery {
                         .collect(Collectors.joining(", ")),
                 filter.authorSearch().orElse("")
         );
-        final SQLQueryExecutor executor = SQLQueryExecutor.forSQLString(bookSQL);
+        final SQLQueryExecutor executor = SQLExecutorFactory.createQuery()
+                .forStatement(DBConnection.createStatement())
+                .forSqlString(bookSQL)
+                .get();
         final Set<Book> books = new HashSet<>();
-        for (Book b : executor.getMappedList(LiteratureMapper.BOOK_MAPPER)) {
+        var bookList = executor.getMappedList(LiteratureMapper.BOOK_MAPPER);
+        for (Book b : bookList) {
             BOOK_AUTHOR_EXECUTOR.getPreparedStatement().setInt(1, b.id());
             BOOK_SUBFIELD_EXECUTOR.getPreparedStatement().setInt(1, b.id());
             var authors = BOOK_AUTHOR_EXECUTOR.getMappedList(LiteratureMapper.AUTHOR_MAPPER);
