@@ -13,6 +13,7 @@ public final class SQLExceptionHandler {
 
     public static void handle(SQLException e, PrintStream out) {
         if (e == null) throw new IllegalArgumentException("exception to be handled must not be null");
+        out.println();
         out.println("--- A SQLException occurred ---");
         for (
                 SQLException ex = e;

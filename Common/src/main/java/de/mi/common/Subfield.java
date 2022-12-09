@@ -16,6 +16,6 @@ public record Subfield(int id, String name) {
 
     @Override
     public String toString() {
-        throw new UnsupportedOperationException("use getter to create string");
+        return "[" + id + "] " + name;
     }
 }

@@ -3,8 +3,9 @@ package de.mi.mapper;
 import de.mi.common.Subfield;
 
 import java.util.Map;
+import java.util.Optional;
 
-public class SubfieldMapper implements Mapper<Subfield> {
+class SubfieldMapper implements Mapper<Subfield> {
     private static final Subfield NULL_SUBFIELD = new Subfield(-1, null);
 
     /**
@@ -16,6 +17,11 @@ public class SubfieldMapper implements Mapper<Subfield> {
      */
     @Override
     public Subfield apply(Map<String, Object> values) {
-        return null; // TODO: add mapping
+        return Optional.ofNullable((Integer) values.get("id"))
+                .map(id -> new Subfield(
+                        id,
+                        (String) values.get("name")
+                ))
+                .orElse(NULL_SUBFIELD);
     }
 }

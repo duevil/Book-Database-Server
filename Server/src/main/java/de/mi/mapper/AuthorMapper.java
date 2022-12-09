@@ -3,8 +3,9 @@ package de.mi.mapper;
 import de.mi.common.Author;
 
 import java.util.Map;
+import java.util.Optional;
 
-public class AuthorMapper implements Mapper<Author> {
+class AuthorMapper implements Mapper<Author> {
     private static final Author NULL_AUTHOR = new Author(-1, null, null);
 
     /**
@@ -16,6 +17,12 @@ public class AuthorMapper implements Mapper<Author> {
      */
     @Override
     public Author apply(Map<String, Object> values) {
-        return null; // TODO: add mapping
+        return Optional.ofNullable((Integer) values.get("id"))
+                .map(id -> new Author(
+                        id,
+                        (String) values.get("first_name"),
+                        (String) values.get("last_name")
+                ))
+                .orElse(NULL_AUTHOR);
     }
 }

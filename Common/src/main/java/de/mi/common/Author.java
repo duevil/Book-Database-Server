@@ -16,6 +16,6 @@ public record Author(int id, String firstName, String lastName) {
 
     @Override
     public String toString() {
-        throw new UnsupportedOperationException("use getter to create string");
+        return firstName + ' ' + lastName;
     }
 }

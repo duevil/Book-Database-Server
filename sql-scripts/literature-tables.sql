@@ -35,6 +35,6 @@ DROP TABLE IF EXISTS book_subfields;
 CREATE TABLE book_subfields
 (
     book_id     SMALLINT REFERENCES books (id),
-    subgenre_id SMALLINT REFERENCES subfields (id),
-    PRIMARY KEY (book_id, subgenre_id)
+    subfield_id SMALLINT REFERENCES subfields (id),
+    PRIMARY KEY (book_id, subfield_id)
 );

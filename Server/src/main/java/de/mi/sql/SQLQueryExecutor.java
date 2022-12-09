@@ -13,17 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class SQLQueryExecutor {
+public final class SQLQueryExecutor {
     private final Statement statement;
     private final String sql;
-
-    public SQLQueryExecutor(PreparedStatement statement) {
-        this(Objects.requireNonNull(statement, "prepared statement"), null);
-    }
-
-    public SQLQueryExecutor(String sql) {
-        this(null, Objects.requireNonNull(sql, "sql string"));
-    }
 
     private SQLQueryExecutor(Statement statement, String sql) {
         this.statement = statement;
@@ -51,6 +43,20 @@ public class SQLQueryExecutor {
         return mapList;
     }
 
+    public static SQLQueryExecutor forPreparedStatement(PreparedStatement statement) {
+        return new SQLQueryExecutor(
+                Objects.requireNonNull(statement, "prepared statement"),
+                null
+        );
+    }
+
+    public static SQLQueryExecutor forSQLString(String sql) {
+        return new SQLQueryExecutor(
+                null,
+                Objects.requireNonNull(sql, "sql string")
+        );
+    }
+
     private List<Map<String, Object>> getMapList() throws SQLException {
         if (statement instanceof PreparedStatement) {
             return Collections.unmodifiableList(getMapList(statement, null));
@@ -64,5 +70,10 @@ public class SQLQueryExecutor {
 
     public <T> List<T> getMappedList(Mapper<T> mapper) throws SQLException {
         return getMapList().stream().map(mapper).toList();
+    }
+
+    public PreparedStatement getPreparedStatement() {
+        if (statement instanceof PreparedStatement preparedStatement) return preparedStatement;
+        else throw new IllegalCallerException("executor was not created using a prepared statement");
     }
 }

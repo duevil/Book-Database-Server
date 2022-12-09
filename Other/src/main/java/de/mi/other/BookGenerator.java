@@ -51,7 +51,7 @@ public final class BookGenerator {
             """;
     private static final String BOOK_SQL_TEMPLATE = """
             INSERT INTO books
-            VALUES (%d, '%s', '%s', %d, %d, '%s');
+            VALUES (%d, '%s', '%s', %d, %d);
                             
             %s%s""";
     private static final String AUTHOR_SQL_TEMPLATE = """
@@ -88,7 +88,7 @@ public final class BookGenerator {
             var subfields = new ArrayList<>(List.of(SUBFIELDS));
             int numSubfields = RND.nextInt(1, 5);
             while (subfields.size() > numSubfields) subfields.remove(RND.nextInt(subfields.size()));
-            subfields.stream().map(Subfield::name).forEach(System.out::println);
+            subfields.forEach(System.out::println);
             System.out.print("-- Enter book title (or 0 to exit): ");
             if (SCANNER.hasNextInt() && SCANNER.nextInt() == 0) break;
             String title = SCANNER.nextLine();
@@ -132,7 +132,6 @@ public final class BookGenerator {
                         b.publisher().replace("'", "''"),
                         b.year(),
                         b.pages(),
-                        "",
                         authors,
                         subfields
                 );
@@ -148,14 +147,14 @@ public final class BookGenerator {
                 b.title(),
                 b.authors()
                         .stream()
-                        .map(a -> a.firstName() + " " + a.lastName())
+                        .map(Author::toString)
                         .collect(Collectors.joining(", ")),
                 b.publisher(),
                 b.year(),
                 b.pages(),
                 b.subfields()
                         .stream()
-                        .map(Subfield::name)
+                        .map(Subfield::toString)
                         .collect(Collectors.joining(", "))
         ));
     }

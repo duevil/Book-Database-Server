@@ -2,9 +2,11 @@ package de.mi.mapper;
 
 import de.mi.common.Book;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 
-public class BookMapper implements Mapper<Book> {
+class BookMapper implements Mapper<Book> {
     private static final Book NULL_BOOK = new Book(-1, null, null, null, -1, -1, null);
 
     /**
@@ -16,6 +18,16 @@ public class BookMapper implements Mapper<Book> {
      */
     @Override
     public Book apply(Map<String, Object> values) {
-        return null; // TODO: add mapping
+        return Optional.ofNullable((Integer) values.get("id"))
+                .map(id -> new Book(
+                        id,
+                        (String) values.get("title"),
+                        new HashSet<>(),
+                        (String) values.get("publisher"),
+                        (Integer) values.get("year"),
+                        (Integer) values.get("pages"),
+                        new HashSet<>()
+                ))
+                .orElse(NULL_BOOK);
     }
 }
