@@ -11,25 +11,34 @@ public final class SQLExceptionHandler {
         handle(e, System.err);
     }
 
-    public static void handle(SQLException e, PrintStream out) {
+    public static void handle(SQLException e, String sql) {
+        handle(e, sql, System.err);
+    }
+
+    public static void handle(SQLException e, PrintStream out) throws IllegalArgumentException {
         if (e == null) throw new IllegalArgumentException("exception to be handled must not be null");
-        out.println();
-        out.println("--- A SQLException occurred ---");
+        out.printf(
+                """
+                        --- A SQLException occurred ---
+                        Message: %s
+                        SQLState: %s
+                        ErrorCode: %d
+                        """.stripIndent(),
+                e.getMessage(),
+                e.getSQLState(),
+                e.getErrorCode()
+                );
         for (
-                SQLException ex = e;
+                SQLException ex = e.getNextException();
                 ex != null;
                 ex = e.getNextException()
         ) {
-            out.printf(
-                    """
-                            Message: %s
-                            SQLState: %s
-                            ErrorCode: %d
-                            """.stripIndent(),
-                    e.getMessage(),
-                    e.getSQLState(),
-                    e.getErrorCode()
-            );
+            System.out.printf("--- Causing exception ---%n%s", ex);
         }
+    }
+
+    public static void handle(SQLException e, String sql, PrintStream out) {
+        handle(e, out);
+        out.println("SQL Statement: " + sql);
     }
 }

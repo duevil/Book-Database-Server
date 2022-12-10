@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
 
-public class SQLScriptRunner extends SQLExecutor {
+public class SQLScriptRunner extends SQLExecutor<Void> {
     private final Path path;
 
     SQLScriptRunner(Path path) {
@@ -16,7 +16,7 @@ public class SQLScriptRunner extends SQLExecutor {
     }
 
     @Override
-    public void execute() throws SQLException {
+    public Void execute(Object... values) throws SQLException, ExecutionException {
         var sb = new StringBuilder();
         try (var scanner = new Scanner(path, Charset.defaultCharset())) {
             Statement statement = getStatement();
@@ -29,6 +29,7 @@ public class SQLScriptRunner extends SQLExecutor {
         } catch (IOException e) {
             throw new ExecutionException(e);
         }
+        return null;
     }
 
     /**
@@ -43,9 +44,10 @@ public class SQLScriptRunner extends SQLExecutor {
      * @param path       Der Path zur auszuführenden Script-Datei
      * @throws IOException Wenn beim Öffnen der Datei in I/O-Fehler auftritt
      * @deprecated Klasse wurde als Implementierung von {@link SQLExecutor} ge-refactored;
-     * die Funktionalität dieser Methode wurde in {@link SQLScriptRunner#execute()} übernommen
+     * die Funktionalität dieser Methode wurde in {@link SQLScriptRunner#execute(Object...)} ()} übernommen
      */
     @Deprecated(since = "0.2.7")
+    @SuppressWarnings("java:S1133")
     public static void runFile(Connection connection, Path path) throws IOException {
         try (
                 var statement = connection.createStatement();

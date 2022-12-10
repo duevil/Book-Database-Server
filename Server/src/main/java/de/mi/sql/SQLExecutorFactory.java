@@ -1,19 +1,19 @@
 package de.mi.sql;
 
+import de.mi.mapper.Mapper;
+
 import java.nio.file.Path;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.sql.Statement;
 
-public final class SQLExecutorFactory<T extends SQLExecutor> {
+public final class SQLExecutorFactory<T extends SQLExecutor<?>> {
     private final T executor;
 
     private SQLExecutorFactory(T executor) {
         this.executor = executor;
     }
 
-    public static SQLExecutorFactory<SQLQueryExecutor> createQuery() {
-        return new SQLExecutorFactory<>(new SQLQueryExecutor());
+    public static <V> SQLExecutorFactory<SQLQueryExecutor<V>> createQuery(Mapper<V> mapper) {
+        return new SQLExecutorFactory<>(new SQLQueryExecutor<>(mapper));
     }
 
     public static SQLExecutorFactory<SQLUpdateExecutor> createUpdater() {
@@ -24,23 +24,18 @@ public final class SQLExecutorFactory<T extends SQLExecutor> {
         return new SQLExecutorFactory<>(new SQLScriptRunner(scriptPath));
     }
 
-    public SQLExecutorFactory<T> forPreparedStatement(PreparedStatement statement) {
+    public SQLExecutorFactory<T> setStatement(Statement statement) {
         executor.setStatement(statement);
         return this;
     }
 
-    public SQLExecutorFactory<T> forStatement(Statement statement) throws SQLException {
-        executor.setStatement(statement);
-        return this;
-    }
-
-    public SQLExecutorFactory<T> forSqlString(String sql) {
+    public SQLExecutorFactory<T> setSqlString(String sql) {
         executor.setSql(sql);
         return this;
     }
 
-    public T get() {
-        if (executor.getSql() == null)
+    public T get() throws IllegalStateException {
+        if (executor.getStatement() == null)
             throw new IllegalStateException("the executor's statement was no yet initialized");
         return executor;
     }
