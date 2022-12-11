@@ -41,7 +41,7 @@ public final class DBConnection {
 
     public static DBConnection get() throws IllegalStateException {
         if (INSTANCE == null)
-            throw new IllegalStateException("no connection to a database could was established");
+            throw new IllegalStateException("no connection to a database was established");
         return INSTANCE;
     }
 

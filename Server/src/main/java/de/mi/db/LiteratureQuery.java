@@ -3,7 +3,6 @@ package de.mi.db;
 import de.mi.common.Author;
 import de.mi.common.Book;
 import de.mi.common.BookFilter;
-import de.mi.common.BookFilterBuilder;
 import de.mi.common.Subfield;
 import de.mi.mapper.LiteratureMapper;
 import de.mi.sql.SQLExceptionHandler;
@@ -14,10 +13,10 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.StringJoiner;
 
 public final class LiteratureQuery {
-    private static final BookFilter EMPTY_FILTER = new BookFilterBuilder().build();
+    private static final BookFilter EMPTY_FILTER = BookFilter.builder().build();
     private static final Set<Subfield> SUBFIELDS = new HashSet<>();
     private static final String BOOK_SQL = """
             SELECT id, title, publisher, year, pages
@@ -98,16 +97,13 @@ public final class LiteratureQuery {
                 filter.yearRange().max(),
                 filter.pageRange().min(),
                 filter.pageRange().max(),
-                (filter.subfields().isEmpty() ? SUBFIELDS : filter.subfields()).stream()
-                        .map(Subfield::id)
-                        .map(String::valueOf)
-                        .collect(Collectors.joining(", ")),
+                filterSubfieldsToString(filter),
                 filter.authorSearch().orElse("")
         );
         final Set<Book> books = new HashSet<>();
-        var bookList = BOOK_QUERY_FACTORY.setSqlString(bookSQL).get().execute();
+        var booksNullSets = BOOK_QUERY_FACTORY.setSqlString(bookSQL).get().execute();
 
-        for (Book b : bookList) {
+        for (Book b : booksNullSets) {
             var authors = BOOK_AUTHOR_EXECUTOR.execute(b.id());
             var subfields = BOOK_SUBFIELD_EXECUTOR.execute(b.id());
             books.add(new Book(
@@ -122,5 +118,16 @@ public final class LiteratureQuery {
         }
 
         return Collections.unmodifiableSet(books);
+    }
+
+    private static String filterSubfieldsToString(BookFilter filter) {
+        var subfieldIDs = filter.subfieldIDs().isEmpty()
+                ? SUBFIELDS.stream().map(Subfield::id).toList()
+                : filter.subfieldIDs();
+        var stringJoiner = new StringJoiner(",");
+        for (Integer subfieldID : subfieldIDs) {
+            stringJoiner.add(subfieldID.toString());
+        }
+        return stringJoiner.toString();
     }
 }

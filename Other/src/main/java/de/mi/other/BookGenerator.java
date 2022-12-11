@@ -46,7 +46,7 @@ public final class BookGenerator {
             publisher: %s
             year: %d
             pages: %d
-            subfields: %s
+            subfieldIDs: %s
                             
             """;
     private static final String BOOK_SQL_TEMPLATE = """
