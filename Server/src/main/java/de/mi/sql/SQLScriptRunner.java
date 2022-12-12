@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
@@ -20,6 +21,9 @@ public class SQLScriptRunner extends SQLExecutor<Void> {
         var sb = new StringBuilder();
         try (var scanner = new Scanner(path, Charset.defaultCharset())) {
             Statement statement = getStatement();
+            if (statement instanceof PreparedStatement) {
+                throw new IllegalAccessError("execution can not be completed for prepared statement");
+            }
             Connection connection = statement.getConnection();
             // save original auto commit value to restore it later
             boolean origAutoCommit = connection.getAutoCommit();

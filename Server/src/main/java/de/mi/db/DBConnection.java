@@ -3,6 +3,7 @@ package de.mi.db;
 import de.mi.sql.SQLExceptionHandler;
 import de.mi.sql.SQLExecutorFactory;
 
+import javax.swing.JOptionPane;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -30,13 +31,26 @@ public final class DBConnection {
     private final Connection connection;
 
     private DBConnection(String user, String password) throws SQLException {
-        try (Connection con = DriverManager.getConnection(BASE_URL, "root", null)) {
-            SQLExecutorFactory.createScriptRunner(SCHEMA_SQL)
-                    .setStatement(con.createStatement())
-                    .get()
-                    .execute();
+        var url = BASE_URL + '/' + DATABASE_NAME;
+        Connection con;
+        try {
+            con = DriverManager.getConnection(url, user, password);
+        } catch (SQLException e) {
+            SQLExceptionHandler.handle(e);
+            System.err.println("""
+                    Database properly does not exist.
+                    Trying to connect to root server and to create database and user...""");
+            String pass = JOptionPane.showInputDialog("Enter SQL server root user password:");
+            if (pass == null) throw new ExceptionInInitializerError("password input was canceled");
+            try (Connection c = DriverManager.getConnection(BASE_URL, "root", pass)) {
+                SQLExecutorFactory.createScriptRunner(SCHEMA_SQL)
+                        .setStatement(c.createStatement())
+                        .get()
+                        .execute();
+            }
+            con = DriverManager.getConnection(url, user, password);
         }
-        connection = DriverManager.getConnection(BASE_URL + '/' + DATABASE_NAME, user, password);
+        connection = con;
     }
 
     public static DBConnection get() throws IllegalStateException {
