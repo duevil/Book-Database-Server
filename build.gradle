@@ -7,7 +7,7 @@ subprojects {
     apply plugin: 'application'
 
     group 'de.mi'
-    version '0.4.0' // TODO: update version number on commit
+    version '0.4.1' // TODO: update version number on commit
 
     sourceCompatibility = '17'
     targetCompatibility = '17'

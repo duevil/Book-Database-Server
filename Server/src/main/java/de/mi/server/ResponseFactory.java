@@ -12,11 +12,11 @@ final class ResponseFactory {
 
     }
 
-    public static <R, T> Response create(Function<R, T> function, T t) {
+    public static <R, T> Response create(ExFunction<R, T> function, T t) {
         var response = Response.noContent();
         try {
             R entity = function.apply(t);
-            if (!(function instanceof Consumer)) response = Response.ok(entity);
+            if (!(function instanceof ExConsumer)) response = Response.ok(entity);
         } catch (SQLException e) {
             LOGGER.severe(e::toString);
             response = Response.serverError();
@@ -27,37 +27,11 @@ final class ResponseFactory {
         return response.build();
     }
 
-    public static <T> Response create(Supplier<T> supplier) {
+    public static <T> Response create(ExSupplier<T> supplier) {
         return create(supplier, null);
     }
 
-    public static <T> Response create(Consumer<T> consumer, T t) {
+    public static <T> Response create(ExConsumer<T> consumer, T t) {
         return ResponseFactory.<Void, T>create(consumer, t);
-    }
-
-    @FunctionalInterface
-    public interface Function<R, T> {
-        R apply(T t) throws SQLException, IllegalArgumentException;
-    }
-
-    @FunctionalInterface
-    public interface Consumer<T> extends Function<Void, T> {
-        @Override
-        default Void apply(T t) throws SQLException, IllegalArgumentException {
-            accept(t);
-            return null;
-        }
-
-        void accept(T t) throws SQLException, IllegalArgumentException;
-    }
-
-    @FunctionalInterface
-    public interface Supplier<T> extends Function<T, Void> {
-        @Override
-        default T apply(Void ignored) throws SQLException, IllegalArgumentException {
-            return get();
-        }
-
-        T get() throws SQLException, IllegalArgumentException;
     }
 }
