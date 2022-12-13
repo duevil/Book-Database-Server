@@ -1,6 +1,9 @@
 package de.mi.common;
 
 public record Author(int id, String firstName, String lastName) {
+    public Author {
+        if (id < 0) throw new IllegalArgumentException("id must not be negativ");
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -27,7 +27,7 @@ public final class SQLExceptionHandler {
                 e.getMessage(),
                 e.getSQLState(),
                 e.getErrorCode()
-                );
+        );
         for (
                 SQLException ex = e.getNextException();
                 ex != null;

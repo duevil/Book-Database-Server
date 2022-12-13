@@ -12,6 +12,7 @@ import de.mi.sql.SQLQueryExecutor;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -129,5 +130,25 @@ public final class LiteratureQuery {
             stringJoiner.add(subfieldID.toString());
         }
         return stringJoiner.toString();
+    }
+
+    public static int getNextID(String type) {
+        var sql = "SELECT MAX(id) AS max_id FROM ";
+        try {
+            return SQLExecutorFactory.createQuery(m -> (Integer) m.get("max_id"))
+                           .setStatement(DBConnection.createStatement())
+                           .setSqlString(sql + switch (type.toLowerCase(Locale.ROOT)) {
+                               case "book" -> "books";
+                               case "author" -> "authors";
+                               case "subfield" -> "subfields";
+                               default -> throw new IllegalArgumentException("invalid class");
+                           })
+                           .get()
+                           .execute()
+                           .get(0) + 1;
+        } catch (SQLException e) {
+            SQLExceptionHandler.handle(e);
+            return -1;
+        }
     }
 }

@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 
 class AuthorMapper implements Mapper<Author> {
-    private static final Author NULL_AUTHOR = new Author(-1, null, null);
+    private static final Author NULL_AUTHOR = new Author(0, null, null);
 
     /**
      * Erzeugt eine neue Instanz aus den Werten,

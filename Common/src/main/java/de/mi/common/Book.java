@@ -2,15 +2,18 @@ package de.mi.common;
 
 import java.util.Set;
 
-public record Book  (
-            int id,
-            String title,
-            Set<Author> authors,
-            String publisher,
-            int year,
-            int pages,
-            Set<Subfield> subfields
+public record Book(
+        int id,
+        String title,
+        Set<Author> authors,
+        String publisher,
+        int year,
+        int pages,
+        Set<Subfield> subfields
 ) {
+    public Book {
+        if (id < 0) throw new IllegalArgumentException("id must not be negativ");
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -26,6 +29,6 @@ public record Book  (
 
     @Override
     public String toString() {
-        throw new UnsupportedOperationException("use getter to create string");
+        return "[%d] %s (%d, %s)".formatted(id, title, year, publisher);
     }
 }

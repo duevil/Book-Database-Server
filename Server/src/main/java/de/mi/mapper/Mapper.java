@@ -7,9 +7,9 @@ import java.util.function.Function;
  * Interface zum Mappen einer {@link Map} mit Objekten, welche einem Namen zugeordnet sind,
  * auf eine neue Instanz eines Objektes aus den Werten aus der Map
  *
- * @see java.util.function.Function
- * @author Malte Kasolowsky <code>m30114</code>
  * @param <T> Der Typ des Resultats des Mappings
+ * @author Malte Kasolowsky <code>m30114</code>
+ * @see java.util.function.Function
  */
 public interface Mapper<T> extends Function<Map<String, Object>, T> {
 

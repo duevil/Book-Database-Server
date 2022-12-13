@@ -16,15 +16,16 @@ import java.util.logging.Logger;
 final class Server {
     private static final Logger LOGGER = Logger.getLogger("org.glassfish");
 
-    static {
-        LOGGER.setLevel(Level.SEVERE);
-    }
-
     private Server() {
     }
 
-    public static void start(String host, int port, String name, Class<? extends Application> applicationClass) {
-        URI uri = UriBuilder.fromUri("https://{h}:{p}/{n}").build(host, port, name);
+    public static void start(
+            String host,
+            int port,
+            String namespace,
+            Class<? extends Application> applicationClass
+    ) {
+        URI uri = UriBuilder.fromUri("https://{h}:{p}/{n}").build(host, port, namespace);
         ResourceConfig config = ResourceConfig.forApplicationClass(applicationClass);
         HttpServer server = GrizzlyHttpServerFactory.createHttpServer(uri, config);
         try {
@@ -40,7 +41,7 @@ final class Server {
     private static void waitForShutdownConfirmation() throws IOException {
         String input;
         do {
-            System.out.print("Enter 'STOP' to shutdown the server... ");
+            LOGGER.info("Enter 'STOP' to shutdown the server... ");
             try (var os = new ByteArrayOutputStream()) {
                 do os.write(System.in.read());
                 while (System.in.available() > 0);

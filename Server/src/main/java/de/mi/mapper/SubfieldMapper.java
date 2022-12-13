@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 
 class SubfieldMapper implements Mapper<Subfield> {
-    private static final Subfield NULL_SUBFIELD = new Subfield(-1, null);
+    private static final Subfield NULL_SUBFIELD = new Subfield(0, null);
 
     /**
      * Erzeugt eine neue Instanz aus den Werten,

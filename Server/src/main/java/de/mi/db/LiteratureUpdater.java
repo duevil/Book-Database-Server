@@ -18,13 +18,10 @@ public final class LiteratureUpdater {
         replaceBook(book);
     }
 
-    public static void deleteBook(Book book) throws SQLException, IllegalArgumentException {
-        if (!LiteratureQuery.queryBooks().contains(book))
-            throw new IllegalArgumentException("book does not exist and thus can not be deleted");
-
-        UpdateStatements.DELETE_BOOK.executor.execute(book.id());
-        UpdateStatements.DELETE_BOOK_AUTHORS.executor.execute(book.id());
-        UpdateStatements.DELETE_BOOK_SUBFIELDS.executor.execute(book.id());
+    public static void deleteBook(int bookID) throws SQLException {
+        UpdateStatements.DELETE_BOOK.executor.execute(bookID);
+        UpdateStatements.DELETE_BOOK_AUTHORS.executor.execute(bookID);
+        UpdateStatements.DELETE_BOOK_SUBFIELDS.executor.execute(bookID);
         UpdateStatements.DELETE_AUTHORS.executor.execute();
     }
 

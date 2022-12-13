@@ -7,7 +7,6 @@ import de.mi.db.LiteratureUpdater;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -17,77 +16,54 @@ import jakarta.ws.rs.core.Application;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.logging.Logger;
 
 @Path("/")
 public class LiteratureRest {
-    private static final Logger LOGGER = Logger.getLogger("org.glassfish");
 
-    public static Class<? extends Application> getApplicationClass() {
-        return RestApplication.class;
-    }
+    protected static final Class<? extends Application> APPLICATION = RestApplication.class;
 
-    private static Response bookManipulation(Book book, String method) {
-        try {
-            switch (method) {
-                case HttpMethod.PUT -> LiteratureUpdater.updateBook(book);
-                case HttpMethod.POST -> LiteratureUpdater.insertBook(book);
-                case HttpMethod.DELETE -> LiteratureUpdater.deleteBook(book);
-                default -> { /* do nothing */ }
-            }
-            return Response.noContent().build();
-        } catch (SQLException e) {
-            LOGGER.severe(e::toString);
-            return Response.serverError().build();
-        } catch (IllegalArgumentException e) {
-            LOGGER.info(e::toString);
-            return Response.status(Response.Status.BAD_REQUEST).build();
-        }
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getName() {
+        return ResponseFactory.create(() -> "Informatik Fachliteratur");
     }
 
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response getName() {
-        return Response.ok("Informatik Fachliteratur").build();
+    @Path("next_id")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getMaxID(@QueryParam("type") String type) {
+        return ResponseFactory.<Integer, String>create(LiteratureQuery::getNextID, type);
     }
 
     @GET
     @Path("subfields")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSubfields() {
-        return Response.ok(LiteratureQuery.getSubfields()).build();
+        return ResponseFactory.create(LiteratureQuery::getSubfields);
     }
 
     @GET
-    @Path("books/all")
+    @Path("books")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllBooks() {
         return getBooks(null);
     }
 
-    @POST
+    @PUT
     @Path("books")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response getBooks(BookFilter filter) {
-        try {
-            Set<Book> books = filter != null
-                    ? LiteratureQuery.queryBooks(filter)
-                    : LiteratureQuery.queryBooks();
-            return Response.ok(books).build();
-        } catch (SQLException e) {
-            LOGGER.severe(e::toString);
-            return Response.serverError().build();
-        }
+        return filter == null
+                ? ResponseFactory.create(LiteratureQuery::queryBooks)
+                : ResponseFactory.<Set<Book>, BookFilter>create(LiteratureQuery::queryBooks, filter);
     }
 
     @GET
-    @Path("books")
+    @Path("books/filter")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBooks(
             @QueryParam("title") String titleSearch,
@@ -96,7 +72,7 @@ public class LiteratureRest {
             @QueryParam("max_year") Integer maxYear,
             @QueryParam("min_pages") Integer minPages,
             @QueryParam("max_pages") Integer maxPages,
-            @QueryParam("subfield") List<Integer> subfieldIDs
+            @QueryParam("subfield") Set<Integer> subfieldIDs
     ) {
         BookFilter filter = BookFilter.builder()
                 .searchTitle(titleSearch)
@@ -116,21 +92,20 @@ public class LiteratureRest {
     @Path("change")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response changeBook(Book book) {
-        return bookManipulation(book, HttpMethod.PUT);
+        return ResponseFactory.create(LiteratureUpdater::updateBook, book);
     }
 
     @POST
     @Path("add")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addBook(Book book) {
-        return bookManipulation(book, HttpMethod.POST);
+        return ResponseFactory.create(LiteratureUpdater::insertBook, book);
     }
 
     @DELETE
     @Path("remove")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response deleteBook(Book book) {
-        return bookManipulation(book, HttpMethod.DELETE);
+    public Response deleteBook(@QueryParam("id") int bookID) {
+        return ResponseFactory.create(LiteratureUpdater::deleteBook, bookID);
     }
 
     private static class RestApplication extends Application {

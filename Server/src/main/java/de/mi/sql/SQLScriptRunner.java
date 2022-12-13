@@ -16,26 +16,6 @@ public class SQLScriptRunner extends SQLExecutor<Void> {
         this.path = path;
     }
 
-    @Override
-    public Void execute(Object... values) throws SQLException, ExecutionException {
-        var sb = new StringBuilder();
-        try (var scanner = new Scanner(path, Charset.defaultCharset())) {
-            Statement statement = getStatement();
-            if (statement instanceof PreparedStatement) {
-                throw new IllegalAccessError("execution can not be completed for prepared statement");
-            }
-            Connection connection = statement.getConnection();
-            // save original auto commit value to restore it later
-            boolean origAutoCommit = connection.getAutoCommit();
-            executionLoop(connection, statement, scanner, sb);
-            // restore previous auto commit state
-            connection.setAutoCommit(origAutoCommit);
-        } catch (IOException e) {
-            throw new ExecutionException(e);
-        }
-        return null;
-    }
-
     /**
      * Liest eine Datei am angegebenen {@link Path} ein. Dabei wird der Inhalt Zeile für Zeile durchgegangen,
      * bis ein Semicolon am Zeilenende erkannt wird,
@@ -93,6 +73,26 @@ public class SQLScriptRunner extends SQLExecutor<Void> {
             throw e;
         }
         connection.commit();
+    }
+
+    @Override
+    public Void execute(Object... values) throws SQLException, ExecutionException {
+        var sb = new StringBuilder();
+        try (var scanner = new Scanner(path, Charset.defaultCharset())) {
+            Statement statement = getStatement();
+            if (statement instanceof PreparedStatement) {
+                throw new IllegalAccessError("execution can not be completed for prepared statement");
+            }
+            Connection connection = statement.getConnection();
+            // save original auto commit value to restore it later
+            boolean origAutoCommit = connection.getAutoCommit();
+            executionLoop(connection, statement, scanner, sb);
+            // restore previous auto commit state
+            connection.setAutoCommit(origAutoCommit);
+        } catch (IOException e) {
+            throw new ExecutionException(e);
+        }
+        return null;
     }
 
     public static final class ExecutionException extends RuntimeException {

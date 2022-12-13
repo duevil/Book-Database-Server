@@ -1,6 +1,9 @@
 package de.mi.common;
 
 public record Subfield(int id, String name) {
+    public Subfield {
+        if (id < 0) throw new IllegalArgumentException("id must not be negativ");
+    }
 
     @Override
     public boolean equals(Object o) {
