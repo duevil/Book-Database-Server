@@ -7,18 +7,22 @@ import de.mi.db.LiteratureUpdater;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+
+import static de.mi.common.Constants.ClientType;
 
 @Path("/")
 public class LiteratureRest {
@@ -52,7 +56,7 @@ public class LiteratureRest {
         return getBooks(null);
     }
 
-    @PUT
+    @POST
     @Path("books")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -91,21 +95,39 @@ public class LiteratureRest {
     @PUT
     @Path("change")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response changeBook(Book book) {
-        return ResponseFactory.create(LiteratureUpdater::updateBook, book);
+    public Response changeBook(
+            @HeaderParam(HttpHeaders.AUTHORIZATION) ClientType type,
+            Book book
+    ) {
+        return switch (type) {
+            case BASIC -> ResponseFactory.createUnauthorized();
+            case MASTER -> ResponseFactory.create(LiteratureUpdater::updateBook, book);
+        };
     }
 
     @POST
     @Path("add")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response addBook(Book book) {
-        return ResponseFactory.create(LiteratureUpdater::insertBook, book);
+    public Response addBook(
+            @HeaderParam(HttpHeaders.AUTHORIZATION) ClientType type,
+            Book book
+    ) {
+        return switch (type) {
+            case BASIC -> ResponseFactory.createUnauthorized();
+            case MASTER -> ResponseFactory.create(LiteratureUpdater::insertBook, book);
+        };
     }
 
     @DELETE
     @Path("remove")
-    public Response deleteBook(@QueryParam("id") int bookID) {
-        return ResponseFactory.create(LiteratureUpdater::deleteBook, bookID);
+    public Response deleteBook(
+            @HeaderParam(HttpHeaders.AUTHORIZATION) ClientType type,
+            @QueryParam("id") int bookID
+    ) {
+        return switch (type) {
+            case BASIC -> ResponseFactory.createUnauthorized();
+            case MASTER -> ResponseFactory.create(LiteratureUpdater::deleteBook, bookID);
+        };
     }
 
     private static class RestApplication extends Application {

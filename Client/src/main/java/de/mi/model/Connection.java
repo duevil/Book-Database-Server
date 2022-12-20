@@ -2,6 +2,7 @@ package de.mi.model;
 
 import de.mi.common.Book;
 import de.mi.common.BookFilter;
+import de.mi.common.Constants;
 import de.mi.common.Subfield;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.GenericType;
@@ -12,8 +13,8 @@ import java.util.Optional;
 public class Connection {
     private final RequestBuilder builder;
 
-    public Connection(String host, int port, String namespace) {
-        builder = new RequestBuilder(host, port, namespace, ClientBuilder.newClient());
+    public Connection(String host, int port, String namespace, Constants.ClientType clientType) {
+        builder = new RequestBuilder(host, port, namespace, ClientBuilder.newClient(), clientType);
     }
 
     public String getProgrammName() {

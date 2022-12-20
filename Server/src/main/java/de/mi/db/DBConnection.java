@@ -16,18 +16,9 @@ public final class DBConnection {
     private static final String DATABASE_NAME = "informatik";
     private static final String SQL_SCRIPTS_PATH = "sql-scripts";
     private static final Path SCHEMA_SQL = Path.of(SQL_SCRIPTS_PATH, "informatik-schema.sql");
-    private static final DBConnection INSTANCE;
-
-    static {
-        DBConnection instance = null;
-        try {
-            instance = new DBConnection("minf", "prog3");
-        } catch (SQLException e) {
-            SQLExceptionHandler.handle(e);
-        }
-        INSTANCE = instance;
-    }
-
+    private static final Path TABLE_SQL = Path.of(SQL_SCRIPTS_PATH, "literature-tables.sql");
+    private static final Path DATA_SQL = Path.of(SQL_SCRIPTS_PATH, "literature-data.sql");
+    private static final Path SUBFIELDS_SQL = Path.of(SQL_SCRIPTS_PATH, "subfields-data.sql");
     private final Connection connection;
 
     private DBConnection(String user, String password) throws SQLException {
@@ -54,9 +45,9 @@ public final class DBConnection {
     }
 
     public static DBConnection get() throws IllegalStateException {
-        if (INSTANCE == null)
+        if (Singleton.INSTANCE.dbCon == null)
             throw new IllegalStateException("no connection to a database was established");
-        return INSTANCE;
+        return Singleton.INSTANCE.dbCon;
     }
 
     public static PreparedStatement prepareStatement(String sql) throws SQLException {
@@ -65,5 +56,44 @@ public final class DBConnection {
 
     public static Statement createStatement() throws SQLException {
         return get().connection.createStatement();
+    }
+
+    public static void initDataBase() {
+        try {
+            SQLExecutorFactory.createScriptRunner(TABLE_SQL)
+                    .setStatement(createStatement()).get()
+                    .execute();
+            SQLExecutorFactory.createScriptRunner(SUBFIELDS_SQL)
+                    .setStatement(createStatement()).get()
+                    .execute();
+            SQLExecutorFactory.createScriptRunner(DATA_SQL)
+                    .setStatement(createStatement()).get()
+                    .execute();
+        } catch (SQLException e) {
+            SQLExceptionHandler.handle(e, System.out);
+        }
+    }
+
+    public static void close() {
+        try {
+            get().connection.close();
+        } catch (SQLException e) {
+            SQLExceptionHandler.handle(e);
+        }
+    }
+
+    private enum Singleton {
+        INSTANCE;
+        private final DBConnection dbCon;
+
+        Singleton() {
+            DBConnection instance = null;
+            try {
+                instance = new DBConnection("minf", "prog3");
+            } catch (SQLException e) {
+                SQLExceptionHandler.handle(e);
+            }
+            dbCon = instance;
+        }
     }
 }

@@ -34,4 +34,8 @@ final class ResponseFactory {
     public static <T> Response create(ExConsumer<T> consumer, T t) {
         return ResponseFactory.<Void, T>create(consumer, t);
     }
+
+    public static Response createUnauthorized() {
+        return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
 }
