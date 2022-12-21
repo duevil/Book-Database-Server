@@ -18,10 +18,7 @@ class SubfieldMapper implements Mapper<Subfield> {
     @Override
     public Subfield apply(Map<String, Object> values) {
         return Optional.ofNullable((Integer) values.get("id"))
-                .map(id -> new Subfield(
-                        id,
-                        (String) values.get("name")
-                ))
+                .map(id -> new Subfield(id, (String) values.get("name")))
                 .orElse(NULL_SUBFIELD);
     }
 }

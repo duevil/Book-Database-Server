@@ -1,28 +1,18 @@
 package de.mi.db;
 
+import de.mi.SimplePrompter;
 import de.mi.sql.SQLExceptionHandler;
 import de.mi.sql.SQLExecutorFactory;
 
-import javax.swing.JOptionPane;
-import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.sql.*;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 public final class DBConnection {
     private static final Logger LOGGER = Logger.getLogger("org.glassfish");
-    private static final String BASE_URL = "jdbc:mysql://localhost";
-    private static final String DATABASE_NAME = "informatik";
-    private static final String SQL_SCRIPTS_PATH = "sql-scripts";
-    private static final Path SCHEMA_SQL = Path.of(SQL_SCRIPTS_PATH, "informatik-schema.sql");
-    private static final Path TABLE_SQL = Path.of(SQL_SCRIPTS_PATH, "literature-tables.sql");
-    private static final Path DATA_SQL = Path.of(SQL_SCRIPTS_PATH, "literature-data.sql");
-    private static final Path SUBFIELDS_SQL = Path.of(SQL_SCRIPTS_PATH, "subfields-data.sql");
     private final Connection connection;
 
     private DBConnection() throws SQLException {
@@ -30,26 +20,39 @@ public final class DBConnection {
     }
 
     private static Connection createConnection() throws SQLException {
-        ResourceBundle resources = ResourceBundle.getBundle("user");
-        String username = resources.getString("username");
+        ResourceBundle resources = ResourceBundle.getBundle("database");
+        String baseUrl = resources.getString("baseUrl");
+        String databaseName = resources.getString("databaseName");
+        String user = resources.getString("user");
         String password = resources.getString("password");
-        String url = BASE_URL + '/' + DATABASE_NAME;
+        String url = baseUrl + '/' + databaseName;
         try {
-            return DriverManager.getConnection(url, username, password);
+            return DriverManager.getConnection(url, user, password);
         } catch (SQLException e) {
             SQLExceptionHandler.handle(e, LOGGER);
             LOGGER.info("""
                     Database properly does not exist.
                     Trying to connect to root server and to create database and user...""");
-            String pass = JOptionPane.showInputDialog("Enter SQL server root user password:");
-            if (pass == null) throw new Exception("password input was canceled");
-            try (Connection c = DriverManager.getConnection(BASE_URL, "root", pass)) {
-                SQLExecutorFactory.createScriptRunner(SCHEMA_SQL)
-                        .setStatement(c.createStatement())
-                        .get()
-                        .execute();
+            String pass = SimplePrompter.getConsoleInput("Enter password of root user:");
+            if (pass == null) throw new IllegalStateException("password input was canceled");
+
+            try (Connection c = DriverManager.getConnection(baseUrl, "root", pass);
+                 var is = ClassLoader.getSystemResourceAsStream("informatik-schema.sql")) {
+                SQLExecutorFactory.createScriptRunner(c.createStatement(), is).execute();
+            } catch (IOException ex) {
+                throw new UncheckedIOException(ex);
             }
-            return DriverManager.getConnection(url, username, password);
+        }
+        return DriverManager.getConnection(url, user, password);
+    }
+
+    public static void executeResourceScript(String name) throws UncheckedIOException {
+        try (var is = ClassLoader.getSystemResourceAsStream(name)) {
+            SQLExecutorFactory.createScriptRunner(createStatement(), is).execute();
+        } catch (SQLException e) {
+            SQLExceptionHandler.handle(e, LOGGER);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -71,22 +74,6 @@ public final class DBConnection {
         }
     }
 
-    public static void initDataBase() {
-        try {
-            SQLExecutorFactory.createScriptRunner(TABLE_SQL)
-                    .setStatement(createStatement()).get()
-                    .execute();
-            SQLExecutorFactory.createScriptRunner(SUBFIELDS_SQL)
-                    .setStatement(createStatement()).get()
-                    .execute();
-            SQLExecutorFactory.createScriptRunner(DATA_SQL)
-                    .setStatement(createStatement()).get()
-                    .execute();
-        } catch (SQLException e) {
-            SQLExceptionHandler.handle(e, LOGGER);
-        }
-    }
-
     public static void close() {
         try {
             Singleton.INSTANCE.dbCon.connection.close();
@@ -99,23 +86,13 @@ public final class DBConnection {
         INSTANCE;
         private final DBConnection dbCon;
 
-        Singleton() {
+        Singleton() throws ExceptionInInitializerError {
             try {
                 dbCon = new DBConnection();
             } catch (SQLException e) {
-                SQLExceptionHandler.handle(e, LOGGER);
-                throw new Exception("Exception thrown during initiation of Singleton instance", e);
+                throw new ExceptionInInitializerError(e);
             }
         }
     }
 
-    private static class Exception extends RuntimeException {
-        public Exception(String message, Throwable cause) {
-            super(message, cause);
-        }
-
-        public Exception(String message) {
-            super(message);
-        }
-    }
 }

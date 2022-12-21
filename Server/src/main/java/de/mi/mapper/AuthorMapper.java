@@ -18,11 +18,7 @@ class AuthorMapper implements Mapper<Author> {
     @Override
     public Author apply(Map<String, Object> values) {
         return Optional.ofNullable((Integer) values.get("id"))
-                .map(id -> new Author(
-                        id,
-                        (String) values.get("first_name"),
-                        (String) values.get("last_name")
-                ))
+                .map(id -> new Author(id, (String) values.get("first_name"), (String) values.get("last_name")))
                 .orElse(NULL_AUTHOR);
     }
 }

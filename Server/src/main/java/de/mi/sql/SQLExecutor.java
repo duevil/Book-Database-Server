@@ -3,13 +3,18 @@ package de.mi.sql;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Objects;
 
-abstract class SQLExecutor<T> {
-    private Statement statement;
-    private String sql;
+public abstract class SQLExecutor<T> {
+    private final Statement statement;
+    private final String sql;
 
-    SQLExecutor() {
+    protected SQLExecutor(PreparedStatement statement) {
+        this(statement, null);
+    }
+
+    protected SQLExecutor(Statement statement, String sql) {
+        this.statement = statement;
+        this.sql = sql;
     }
 
     public abstract T execute(Object... values) throws SQLException;
@@ -23,16 +28,8 @@ abstract class SQLExecutor<T> {
         return statement;
     }
 
-    void setStatement(Statement statement) {
-        this.statement = Objects.requireNonNull(statement, "prepared statement");
-    }
-
     String getSql() {
         return sql;
-    }
-
-    void setSql(String sql) {
-        this.sql = Objects.requireNonNull(sql, "sql string");
     }
 
     void setPreparedStatementValues(Object... values) throws SQLException {

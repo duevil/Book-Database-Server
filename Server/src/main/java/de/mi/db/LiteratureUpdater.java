@@ -3,6 +3,8 @@ package de.mi.db;
 import de.mi.common.Author;
 import de.mi.common.Book;
 import de.mi.common.Subfield;
+import de.mi.sql.SQLExecutorFactory;
+import de.mi.sql.SQLUpdateExecutor;
 
 import java.sql.SQLException;
 
@@ -19,10 +21,10 @@ public final class LiteratureUpdater {
     }
 
     public static void deleteBook(int bookID) throws SQLException {
-        UpdateStatements.DELETE_BOOK.executor.execute(bookID);
-        UpdateStatements.DELETE_BOOK_AUTHORS.executor.execute(bookID);
-        UpdateStatements.DELETE_BOOK_SUBFIELDS.executor.execute(bookID);
-        UpdateStatements.DELETE_AUTHORS.executor.execute();
+        Queries.DELETE_BOOK.get().execute(bookID);
+        Queries.DELETE_BOOK_AUTHORS.get().execute(bookID);
+        Queries.DELETE_BOOK_SUBFIELDS.get().execute(bookID);
+        Queries.DELETE_AUTHORS.get().execute();
     }
 
     public static void insertBook(Book book) throws SQLException, IllegalArgumentException {
@@ -34,15 +36,36 @@ public final class LiteratureUpdater {
 
     private static void replaceBook(Book book) throws SQLException {
         var values = new Object[]{book.id(), book.title(), book.publisher(), book.year(), book.pages()};
-        UpdateStatements.REPLACE_BOOK.executor.execute(values);
+        Queries.REPLACE_BOOK.get().execute(values);
 
         for (Author a : book.authors()) {
-            UpdateStatements.REPLACE_AUTHOR.executor.execute(a.id(), a.firstName(), a.lastName());
-            UpdateStatements.INSERT_BOOK_AUTHORS.executor.execute(a.id(), book.id());
+            Queries.REPLACE_AUTHOR.get().execute(a.id(), a.firstName(), a.lastName());
+            Queries.INSERT_BOOK_AUTHORS.get().execute(a.id(), book.id());
         }
 
         for (Subfield s : book.subfields()) {
-            UpdateStatements.INSERT_BOOK_SUBFIELDS.executor.execute(book.id(), s.id());
+            Queries.INSERT_BOOK_SUBFIELDS.get().execute(book.id(), s.id());
+        }
+    }
+
+    enum Queries {
+        DELETE_AUTHORS("DELETE FROM authors WHERE NOT EXISTS(SELECT * FROM book_authors WHERE author_id = id)"),
+        DELETE_BOOK("DELETE FROM books WHERE id = ?"),
+        DELETE_BOOK_AUTHORS("DELETE FROM book_authors WHERE book_id = ?"),
+        DELETE_BOOK_SUBFIELDS("DELETE FROM book_subfields WHERE book_id = ?"),
+        INSERT_BOOK_AUTHORS("INSERT INTO book_authors VALUES (?, ?) ON DUPLICATE KEY UPDATE book_id = book_id"),
+        INSERT_BOOK_SUBFIELDS("INSERT INTO book_subfields VALUES (?, ?) ON DUPLICATE KEY UPDATE book_id = book_id"),
+        REPLACE_AUTHOR("REPLACE INTO authors (id, first_name, last_name) VALUES (?, ?, ?)"),
+        REPLACE_BOOK("REPLACE INTO books (id, title, publisher, year, pages) VALUES (?, ?, ?, ?, ?)");
+
+        private final SQLUpdateExecutor executor;
+
+        Queries(String sql) {
+            executor = SQLExecutorFactory.createUpdater(DBConnection.prepareStatement(sql));
+        }
+
+        public SQLUpdateExecutor get() {
+            return executor;
         }
     }
 }

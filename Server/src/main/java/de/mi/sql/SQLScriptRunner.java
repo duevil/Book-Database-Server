@@ -1,6 +1,7 @@
 package de.mi.sql;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -10,10 +11,11 @@ import java.sql.Statement;
 import java.util.Scanner;
 
 public class SQLScriptRunner extends SQLExecutor<Void> {
-    private final Path path;
+    private final InputStream data;
 
-    SQLScriptRunner(Path path) {
-        this.path = path;
+    SQLScriptRunner(Statement statement, InputStream data) {
+        super(statement, null);
+        this.data = data;
     }
 
     /**
@@ -31,7 +33,6 @@ public class SQLScriptRunner extends SQLExecutor<Void> {
      * die Funktionalität dieser Methode wurde in {@link SQLScriptRunner#execute(Object...)} ()} übernommen
      */
     @Deprecated(since = "0.2.7")
-    @SuppressWarnings("java:S1133")
     public static void runFile(Connection connection, Path path) throws IOException {
         try (
                 var statement = connection.createStatement();
@@ -78,7 +79,7 @@ public class SQLScriptRunner extends SQLExecutor<Void> {
     @Override
     public Void execute(Object... values) throws SQLException, ExecutionException {
         var sb = new StringBuilder();
-        try (var scanner = new Scanner(path, Charset.defaultCharset())) {
+        try (var scanner = new Scanner(data, Charset.defaultCharset())) {
             Statement statement = getStatement();
             if (statement instanceof PreparedStatement) {
                 throw new IllegalAccessError("execution can not be completed for prepared statement");
@@ -89,8 +90,6 @@ public class SQLScriptRunner extends SQLExecutor<Void> {
             executionLoop(connection, statement, scanner, sb);
             // restore previous auto commit state
             connection.setAutoCommit(origAutoCommit);
-        } catch (IOException e) {
-            throw new ExecutionException(e);
         }
         return null;
     }

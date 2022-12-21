@@ -7,7 +7,7 @@ subprojects {
     apply plugin: 'application'
 
     group 'de.mi'
-    version '0.4.3'
+    version '0.4.4'
 
     sourceCompatibility = '17'
     targetCompatibility = '17'
