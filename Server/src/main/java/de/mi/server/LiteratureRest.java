@@ -2,6 +2,7 @@ package de.mi.server;
 
 import de.mi.common.Book;
 import de.mi.common.BookFilter;
+import de.mi.common.ClientType;
 import de.mi.db.LiteratureQuery;
 import de.mi.db.LiteratureUpdater;
 import jakarta.ws.rs.Consumes;
@@ -21,8 +22,6 @@ import jakarta.ws.rs.core.Response;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-
-import static de.mi.common.Constants.ClientType;
 
 @Path("/")
 public class LiteratureRest {

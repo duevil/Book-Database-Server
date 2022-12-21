@@ -1,15 +1,16 @@
 package de.mi.server;
 
+import de.mi.sql.SQLExceptionHandler;
 import jakarta.ws.rs.core.Response;
 
 import java.sql.SQLException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 final class ResponseFactory {
     private static final Logger LOGGER = Logger.getLogger("org.glassfish");
 
     private ResponseFactory() {
-
     }
 
     public static <R, T> Response create(ExFunction<R, T> function, T t) {
@@ -18,10 +19,10 @@ final class ResponseFactory {
             R entity = function.apply(t);
             if (!(function instanceof ExConsumer)) response = Response.ok(entity);
         } catch (SQLException e) {
-            LOGGER.severe(e::toString);
+            SQLExceptionHandler.handle(e, LOGGER);
             response = Response.serverError();
         } catch (IllegalArgumentException e) {
-            LOGGER.info(e::toString);
+            LOGGER.log(Level.INFO, "Client request had bad arguments", e);
             response = Response.status(Response.Status.BAD_REQUEST);
         }
         return response.build();

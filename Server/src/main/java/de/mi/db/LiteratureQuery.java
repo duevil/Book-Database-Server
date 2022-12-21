@@ -49,34 +49,25 @@ public final class LiteratureQuery {
     private static final SQLQueryExecutor<Author> BOOK_AUTHOR_EXECUTOR;
 
     static {
-        SQLQueryExecutor<Subfield> bookSubfieldExecutor = null;
-        SQLQueryExecutor<Author> bookAuthorExecutor = null;
 
         SUBFIELD_QUERY_FACTORY = SQLExecutorFactory.createQuery(LiteratureMapper.SUBFIELD_MAPPER);
         BOOK_QUERY_FACTORY = SQLExecutorFactory.createQuery(LiteratureMapper.BOOK_MAPPER);
+        SUBFIELD_QUERY_FACTORY.setStatement(DBConnection.createStatement());
+        BOOK_QUERY_FACTORY.setStatement(DBConnection.createStatement());
+        BOOK_SUBFIELD_EXECUTOR = SQLExecutorFactory.createQuery(LiteratureMapper.SUBFIELD_MAPPER)
+                .setStatement(DBConnection.prepareStatement(BOOK_SUBFIELD_SQL))
+                .get();
+        BOOK_AUTHOR_EXECUTOR = SQLExecutorFactory.createQuery(LiteratureMapper.AUTHOR_MAPPER)
+                .setStatement(DBConnection.prepareStatement(BOOK_AUTHOR_SQL))
+                .get();
 
         try {
-            SUBFIELD_QUERY_FACTORY.setStatement(DBConnection.createStatement());
-            BOOK_QUERY_FACTORY.setStatement(DBConnection.createStatement());
-
             var subfieldSQL = "SELECT id, name FROM subfields";
             var subfields = SUBFIELD_QUERY_FACTORY.setSqlString(subfieldSQL).get().execute();
             SUBFIELDS.addAll(subfields);
-
-            var bookSubfieldStatement = DBConnection.prepareStatement(BOOK_SUBFIELD_SQL);
-            var bookAuthorStatement = DBConnection.prepareStatement(BOOK_AUTHOR_SQL);
-            bookSubfieldExecutor = SQLExecutorFactory.createQuery(LiteratureMapper.SUBFIELD_MAPPER)
-                    .setStatement(bookSubfieldStatement)
-                    .get();
-            bookAuthorExecutor = SQLExecutorFactory.createQuery(LiteratureMapper.AUTHOR_MAPPER)
-                    .setStatement(bookAuthorStatement)
-                    .get();
         } catch (SQLException e) {
             SQLExceptionHandler.handle(e);
         }
-
-        BOOK_SUBFIELD_EXECUTOR = bookSubfieldExecutor;
-        BOOK_AUTHOR_EXECUTOR = bookAuthorExecutor;
     }
 
     private LiteratureQuery() {
@@ -132,23 +123,18 @@ public final class LiteratureQuery {
         return stringJoiner.toString();
     }
 
-    public static int getNextID(String type) {
-        var sql = "SELECT MAX(id) AS max_id FROM ";
-        try {
-            return SQLExecutorFactory.createQuery(m -> (Integer) m.get("max_id"))
-                           .setStatement(DBConnection.createStatement())
-                           .setSqlString(sql + switch (type.toLowerCase(Locale.ROOT)) {
-                               case "book" -> "books";
-                               case "author" -> "authors";
-                               case "subfield" -> "subfields";
-                               default -> throw new IllegalArgumentException("invalid class");
-                           })
-                           .get()
-                           .execute()
-                           .get(0) + 1;
-        } catch (SQLException e) {
-            SQLExceptionHandler.handle(e);
-            return -1;
-        }
+    public static int getNextID(String type) throws SQLException {
+        var sql = "SELECT MAX(id) AS max_id FROM " + switch (type.toLowerCase(Locale.ROOT)) {
+            case "book" -> "books";
+            case "author" -> "authors";
+            case "subfield" -> "subfields";
+            default -> throw new IllegalArgumentException("invalid class");
+        };
+        return SQLExecutorFactory.createQuery(m -> (Integer) m.get("max_id"))
+                       .setStatement(DBConnection.createStatement())
+                       .setSqlString(sql)
+                       .get()
+                       .execute()
+                       .get(0) + 1;
     }
 }

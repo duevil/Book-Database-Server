@@ -1,10 +1,7 @@
 package de.mi.db;
 
-import de.mi.sql.SQLExceptionHandler;
 import de.mi.sql.SQLExecutorFactory;
 import de.mi.sql.SQLUpdateExecutor;
-
-import java.sql.SQLException;
 
 enum UpdateStatements {
     DELETE_AUTHORS("DELETE FROM authors WHERE NOT EXISTS(SELECT * FROM book_authors WHERE author_id = id)"),
@@ -19,13 +16,7 @@ enum UpdateStatements {
     public final SQLUpdateExecutor executor;
 
     UpdateStatements(String sql) {
-        SQLUpdateExecutor executorOrNull = null;
-        try {
-            var stmt = DBConnection.prepareStatement(sql);
-            executorOrNull = SQLExecutorFactory.createUpdater().setStatement(stmt).get();
-        } catch (SQLException e) {
-            SQLExceptionHandler.handle(e, sql);
-        }
-        this.executor = executorOrNull;
+        var stmt = DBConnection.prepareStatement(sql);
+        this.executor = SQLExecutorFactory.createUpdater().setStatement(stmt).get();
     }
 }

@@ -1,6 +1,7 @@
 package de.mi.model;
 
-import de.mi.common.Constants;
+import de.mi.common.ClientType;
+import de.mi.common.ServerURI;
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;
@@ -9,26 +10,19 @@ import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 
 import java.util.Optional;
 
 class RequestBuilder {
     private final WebTarget target;
-    private final Constants.ClientType clientType;
+    private final ClientType clientType;
 
-    public RequestBuilder(String host, int port, String namespace, Client client, Constants.ClientType clientType) {
+    public RequestBuilder(Client client, ClientType clientType) {
         this.clientType = clientType;
-        var uri = UriBuilder.newInstance()
-                .scheme("http")
-                .host(host)
-                .port(port)
-                .path(namespace)
-                .build();
-        target = client.target(uri);
+        target = client.target(ServerURI.uri());
     }
 
-    private RequestBuilder(WebTarget target, Constants.ClientType clientType) {
+    private RequestBuilder(WebTarget target, ClientType clientType) {
         this.target = target;
         this.clientType = clientType;
     }

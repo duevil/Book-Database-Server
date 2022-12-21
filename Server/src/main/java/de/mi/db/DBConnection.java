@@ -10,8 +10,12 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.NoSuchElementException;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
 public final class DBConnection {
+    private static final Logger LOGGER = Logger.getLogger("org.glassfish");
     private static final String BASE_URL = "jdbc:mysql://localhost";
     private static final String DATABASE_NAME = "informatik";
     private static final String SQL_SCRIPTS_PATH = "sql-scripts";
@@ -21,41 +25,50 @@ public final class DBConnection {
     private static final Path SUBFIELDS_SQL = Path.of(SQL_SCRIPTS_PATH, "subfields-data.sql");
     private final Connection connection;
 
-    private DBConnection(String user, String password) throws SQLException {
-        var url = BASE_URL + '/' + DATABASE_NAME;
-        Connection con;
+    private DBConnection() throws SQLException {
+        connection = createConnection();
+    }
+
+    private static Connection createConnection() throws SQLException {
+        ResourceBundle resources = ResourceBundle.getBundle("user");
+        String username = resources.getString("username");
+        String password = resources.getString("password");
+        String url = BASE_URL + '/' + DATABASE_NAME;
         try {
-            con = DriverManager.getConnection(url, user, password);
+            return DriverManager.getConnection(url, username, password);
         } catch (SQLException e) {
-            SQLExceptionHandler.handle(e);
-            System.err.println("""
+            SQLExceptionHandler.handle(e, LOGGER);
+            LOGGER.info("""
                     Database properly does not exist.
                     Trying to connect to root server and to create database and user...""");
             String pass = JOptionPane.showInputDialog("Enter SQL server root user password:");
-            if (pass == null) throw new ExceptionInInitializerError("password input was canceled");
+            if (pass == null) throw new Exception("password input was canceled");
             try (Connection c = DriverManager.getConnection(BASE_URL, "root", pass)) {
                 SQLExecutorFactory.createScriptRunner(SCHEMA_SQL)
                         .setStatement(c.createStatement())
                         .get()
                         .execute();
             }
-            con = DriverManager.getConnection(url, user, password);
+            return DriverManager.getConnection(url, username, password);
         }
-        connection = con;
     }
 
-    public static DBConnection get() throws IllegalStateException {
-        if (Singleton.INSTANCE.dbCon == null)
-            throw new IllegalStateException("no connection to a database was established");
-        return Singleton.INSTANCE.dbCon;
+    public static PreparedStatement prepareStatement(String sql) {
+        try {
+            return Singleton.INSTANCE.dbCon.connection.prepareStatement(sql);
+        } catch (SQLException e) {
+            SQLExceptionHandler.handle(e, sql, LOGGER);
+            throw new NoSuchElementException("no prepared statement was created", e);
+        }
     }
 
-    public static PreparedStatement prepareStatement(String sql) throws SQLException {
-        return get().connection.prepareStatement(sql);
-    }
-
-    public static Statement createStatement() throws SQLException {
-        return get().connection.createStatement();
+    public static Statement createStatement() {
+        try {
+            return Singleton.INSTANCE.dbCon.connection.createStatement();
+        } catch (SQLException e) {
+            SQLExceptionHandler.handle(e, LOGGER);
+            throw new NoSuchElementException("no statement was created", e);
+        }
     }
 
     public static void initDataBase() {
@@ -70,15 +83,15 @@ public final class DBConnection {
                     .setStatement(createStatement()).get()
                     .execute();
         } catch (SQLException e) {
-            SQLExceptionHandler.handle(e, System.out);
+            SQLExceptionHandler.handle(e, LOGGER);
         }
     }
 
     public static void close() {
         try {
-            get().connection.close();
+            Singleton.INSTANCE.dbCon.connection.close();
         } catch (SQLException e) {
-            SQLExceptionHandler.handle(e);
+            SQLExceptionHandler.handle(e, LOGGER);
         }
     }
 
@@ -87,13 +100,22 @@ public final class DBConnection {
         private final DBConnection dbCon;
 
         Singleton() {
-            DBConnection instance = null;
             try {
-                instance = new DBConnection("minf", "prog3");
+                dbCon = new DBConnection();
             } catch (SQLException e) {
-                SQLExceptionHandler.handle(e);
+                SQLExceptionHandler.handle(e, LOGGER);
+                throw new Exception("Exception thrown during initiation of Singleton instance", e);
             }
-            dbCon = instance;
+        }
+    }
+
+    private static class Exception extends RuntimeException {
+        public Exception(String message, Throwable cause) {
+            super(message, cause);
+        }
+
+        public Exception(String message) {
+            super(message);
         }
     }
 }
