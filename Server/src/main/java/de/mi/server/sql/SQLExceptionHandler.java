@@ -1,4 +1,4 @@
-package de.mi.sql;
+package de.mi.server.sql;
 
 import java.sql.SQLException;
 import java.util.logging.Level;

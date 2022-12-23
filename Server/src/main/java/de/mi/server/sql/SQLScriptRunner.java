@@ -1,4 +1,4 @@
-package de.mi.sql;
+package de.mi.server.sql;
 
 import java.io.IOException;
 import java.io.InputStream;

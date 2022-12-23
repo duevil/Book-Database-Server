@@ -1,4 +1,4 @@
-package de.mi.mapper;
+package de.mi.server.mapper;
 
 import de.mi.common.Subfield;
 

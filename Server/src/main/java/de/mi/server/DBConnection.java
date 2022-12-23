@@ -1,12 +1,15 @@
-package de.mi.db;
+package de.mi.server;
 
-import de.mi.SimplePrompter;
-import de.mi.sql.SQLExceptionHandler;
-import de.mi.sql.SQLExecutorFactory;
+import de.mi.server.sql.SQLExecutorFactory;
+import de.mi.server.sql.SQLExceptionHandler;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;

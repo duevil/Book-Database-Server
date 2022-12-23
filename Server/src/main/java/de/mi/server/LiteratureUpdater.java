@@ -1,10 +1,10 @@
-package de.mi.db;
+package de.mi.server;
 
 import de.mi.common.Author;
 import de.mi.common.Book;
 import de.mi.common.Subfield;
-import de.mi.sql.SQLExecutorFactory;
-import de.mi.sql.SQLUpdateExecutor;
+import de.mi.server.sql.SQLExecutorFactory;
+import de.mi.server.sql.SQLUpdateExecutor;
 
 import java.sql.SQLException;
 

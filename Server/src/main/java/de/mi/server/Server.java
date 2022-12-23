@@ -1,6 +1,5 @@
 package de.mi.server;
 
-import de.mi.SimplePrompter;
 import de.mi.common.ServerURI;
 import jakarta.ws.rs.core.Application;
 import org.glassfish.grizzly.http.server.HttpServer;

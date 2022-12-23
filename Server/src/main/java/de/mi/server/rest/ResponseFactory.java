@@ -1,6 +1,6 @@
-package de.mi.server;
+package de.mi.server.rest;
 
-import de.mi.sql.SQLExceptionHandler;
+import de.mi.server.sql.SQLExceptionHandler;
 import jakarta.ws.rs.core.Response;
 
 import java.sql.SQLException;

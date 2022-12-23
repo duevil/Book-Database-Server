@@ -1,4 +1,4 @@
-package de.mi.server;
+package de.mi.server.rest;
 
 import java.sql.SQLException;
 

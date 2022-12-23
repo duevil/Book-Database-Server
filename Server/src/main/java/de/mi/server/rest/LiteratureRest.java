@@ -1,10 +1,10 @@
-package de.mi.server;
+package de.mi.server.rest;
 
 import de.mi.common.Book;
 import de.mi.common.BookFilter;
 import de.mi.common.ClientType;
-import de.mi.db.LiteratureQuery;
-import de.mi.db.LiteratureUpdater;
+import de.mi.server.LiteratureQuery;
+import de.mi.server.LiteratureUpdater;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -26,7 +26,7 @@ import java.util.Set;
 @Path("/")
 public class LiteratureRest {
 
-    protected static final Class<? extends Application> APPLICATION = RestApplication.class;
+    public static final Class<? extends Application> APPLICATION = RestApplication.class;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

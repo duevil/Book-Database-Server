@@ -1,6 +1,6 @@
 package de.mi.server;
 
-import de.mi.db.DBConnection;
+import de.mi.server.rest.LiteratureRest;
 
 public class Main {
     public static void main(String[] args) {

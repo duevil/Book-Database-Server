@@ -1,10 +1,10 @@
-package de.mi.sql;
+package de.mi.server.sql;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public abstract class SQLExecutor<T> {
+abstract class SQLExecutor<T> {
     private final Statement statement;
     private final String sql;
 

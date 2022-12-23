@@ -1,12 +1,12 @@
-package de.mi.db;
+package de.mi.server;
 
 import de.mi.common.Author;
 import de.mi.common.Book;
 import de.mi.common.BookFilter;
 import de.mi.common.Subfield;
-import de.mi.mapper.LiteratureMapper;
-import de.mi.sql.SQLExecutorFactory;
-import de.mi.sql.SQLQueryExecutor;
+import de.mi.server.mapper.LiteratureMapper;
+import de.mi.server.sql.SQLExecutorFactory;
+import de.mi.server.sql.SQLQueryExecutor;
 
 import java.sql.SQLException;
 import java.util.Collections;

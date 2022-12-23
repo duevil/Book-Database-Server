@@ -16,15 +16,14 @@ jar {
 
 javafx {
     version = '17'
-    modules = ['javafx.controls', 'javafx.fxml']
+    modules = ['javafx.graphics', 'javafx.controls','javafx.fxml']
 }
 
 dependencies {
     //noinspection VulnerableLibrariesLocal
     implementation "org.glassfish.jersey.media:jersey-media-json-jackson:${jacksonVersion}"
-    implementation "jakarta.ws.rs:jakarta.ws.rs-api:${restVersion}"
     implementation "org.glassfish.jersey.core:jersey-client:${jerseyVersion}"
     implementation "org.glassfish.jersey.inject:jersey-hk2:${jerseyVersion}"
-    implementation "org.glassfish.jaxb:jaxb-runtime:${jaxbVersion}"
+    implementation "jakarta.ws.rs:jakarta.ws.rs-api:${restVersion}"
     implementation project(':Common')
 }

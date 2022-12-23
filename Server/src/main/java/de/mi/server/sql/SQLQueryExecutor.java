@@ -1,6 +1,6 @@
-package de.mi.sql;
+package de.mi.server.sql;
 
-import de.mi.mapper.Mapper;
+import de.mi.server.mapper.Mapper;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

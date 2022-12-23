@@ -1,6 +1,6 @@
-package de.mi;
+package de.mi.server;
 
-import javax.swing.*;
+import javax.swing.JOptionPane;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
