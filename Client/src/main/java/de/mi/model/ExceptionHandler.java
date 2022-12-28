@@ -8,7 +8,7 @@ public final class ExceptionHandler {
 
     public static void handle(Exception e) {
         var alert = new Alert(Alert.AlertType.ERROR);
-        alert.setHeaderText("Eine Ausnahme wurde geworfen!");
+        alert.setHeaderText("Eine Ausnahme ist aufgetreten!");
         alert.setContentText(e.toString());
         alert.show();
     }

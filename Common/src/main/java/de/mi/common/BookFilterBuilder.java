@@ -16,16 +16,21 @@ public final class BookFilterBuilder {
     }
 
     public BookFilterBuilder subfields(Collection<Integer> subfieldIDs) {
-        if (subfieldIDs != null) this.subfieldIDs.addAll(subfieldIDs);
+        Optional.ofNullable(subfieldIDs).orElseThrow(
+                () -> new IllegalArgumentException("subfield collection must not be null")
+        ).forEach(this::subfield);
         return this;
     }
 
-    public BookFilterBuilder subfield(int subfieldID) {
-        this.subfieldIDs.add(subfieldID);
+    public BookFilterBuilder subfield(int subfieldID) throws IllegalArgumentException {
+        if (subfieldID < 0) {
+            throw new IllegalArgumentException("subfield id must not be negativ");
+        }
+        subfieldIDs.add(subfieldID);
         return this;
     }
 
-    public BookFilterBuilder yearRange(int minYear, int maxYear) {
+    public BookFilterBuilder yearRange(int minYear, int maxYear) throws IllegalArgumentException {
         if (!(minYear >= 1900 && minYear < maxYear)) {
             throw new IllegalArgumentException(String.format(
                     "range must be positive and min must be less than max: %d, %d",
@@ -37,7 +42,15 @@ public final class BookFilterBuilder {
         return this;
     }
 
-    public BookFilterBuilder pageRange(int minPages, int maxPages) {
+    public BookFilterBuilder minYear(int minYear) {
+        return yearRange(minYear, yearRange.max());
+    }
+
+    public BookFilterBuilder maxYear(int maxYear) {
+        return yearRange(yearRange.min(), maxYear);
+    }
+
+    public BookFilterBuilder pageRange(int minPages, int maxPages) throws IllegalArgumentException {
         if (!(minPages > 0 && minPages < maxPages)) {
             throw new IllegalArgumentException(String.format(
                     "range must be positive and min must be less than max: %d, %d",
@@ -47,6 +60,14 @@ public final class BookFilterBuilder {
         }
         this.pageRange = new BookFilter.Range(minPages, maxPages);
         return this;
+    }
+
+    public BookFilterBuilder maxPages(int maxPage) {
+        return pageRange(pageRange.min(), maxPage);
+    }
+
+    public BookFilterBuilder minPages(int minPage) {
+        return pageRange(minPage, pageRange.max());
     }
 
     public BookFilterBuilder searchTitle(String titleSearch) {

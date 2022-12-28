@@ -12,9 +12,15 @@ import java.util.Optional;
 
 public class Connection {
     private final RequestBuilder builder;
+    private final ClientType clientType;
 
     public Connection(ClientType clientType) {
+        this.clientType = clientType;
         builder = new RequestBuilder(ClientBuilder.newClient(), clientType);
+    }
+
+    public ClientType getClientType() {
+        return clientType;
     }
 
     public String getProgrammName() {

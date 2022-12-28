@@ -9,11 +9,14 @@ import de.mi.server.sql.SQLExecutorFactory;
 import de.mi.server.sql.SQLQueryExecutor;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class LiteratureQuery {
     private static final BookFilter EMPTY_FILTER = BookFilter.builder().build();
@@ -101,10 +104,13 @@ public final class LiteratureQuery {
     }
 
     private static String filterSubfieldsToString(BookFilter filter) {
-        var idStream = filter.subfieldIDs().isEmpty()
-                ? SUBFIELDS.stream().map(Subfield::id)
-                : filter.subfieldIDs().stream();
-        return idStream.map(String::valueOf).collect(Collectors.joining(","));
+        return Optional.of(filter)
+                .map(BookFilter::subfieldIDs)
+                .filter(s -> !s.isEmpty())
+                .map(Collection::stream)
+                .orElse(Stream.of(0))
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
     }
 
     public static int getNextID(String type) throws SQLException {

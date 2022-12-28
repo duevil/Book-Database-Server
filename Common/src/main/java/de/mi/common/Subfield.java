@@ -1,6 +1,6 @@
 package de.mi.common;
 
-public record Subfield(int id, String name) {
+public record Subfield(int id, String name) implements Comparable<Subfield> {
     public Subfield {
         if (id < 0) throw new IllegalArgumentException("id must not be negativ");
     }
@@ -20,5 +20,10 @@ public record Subfield(int id, String name) {
     @Override
     public String toString() {
         return "[" + id + "] " + name;
+    }
+
+    @Override
+    public int compareTo(Subfield subfield) {
+        return Integer.compare(id, subfield.id);
     }
 }
