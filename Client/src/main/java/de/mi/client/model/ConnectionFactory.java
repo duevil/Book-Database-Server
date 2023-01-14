@@ -1,4 +1,4 @@
-package de.mi.model;
+package de.mi.client.model;
 
 import de.mi.common.ClientType;
 import javafx.scene.control.Alert;
@@ -14,13 +14,13 @@ public final class ConnectionFactory {
         return dialog.showAndWait()
                 .map(Connection::new)
                 .orElseGet(() -> {
-                    var alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setHeaderText("Kein Client Typ ausgewählt!");
-                    alert.setContentText("Das Programm wird geschlossen ...");
-                    alert.showAndWait();
-                    System.exit(0);
-                    return null;
-                }
-        );
+                            var alert = new Alert(Alert.AlertType.INFORMATION);
+                            alert.setHeaderText("Kein Client Typ ausgewählt!");
+                            alert.setContentText("Das Programm wird geschlossen ...");
+                            alert.showAndWait();
+                            System.exit(0);
+                            return null;
+                        }
+                );
     }
 }

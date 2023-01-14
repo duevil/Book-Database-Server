@@ -11,6 +11,9 @@ public record Book(
         int pages,
         Set<Subfield> subfields
 ) {
+    public static final Range DEFAULT_YEAR_RANGE = new Range(1920, 2023);
+    public static final Range DEFAULT_PAGE_RANGE = new Range(10, 500);
+
     public Book {
         if (id < 0) throw new IllegalArgumentException("id must not be negativ");
     }
@@ -29,6 +32,6 @@ public record Book(
 
     @Override
     public String toString() {
-        return "[%d] %s (%d, %s)".formatted(id, title, year, publisher);
+        return String.format("%s (%d, %s)", title, year, publisher);
     }
 }

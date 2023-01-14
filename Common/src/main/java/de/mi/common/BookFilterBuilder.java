@@ -7,8 +7,8 @@ import java.util.Optional;
 @SuppressWarnings("java:S109")
 public final class BookFilterBuilder {
     private final HashSet<Integer> subfieldIDs = new HashSet<>();
-    private BookFilter.Range yearRange = BookFilter.DEFAULT_YEAR_RANGE;
-    private BookFilter.Range pageRange = BookFilter.DEFAULT_PAGE_RANGE;
+    private Range yearRange = Book.DEFAULT_YEAR_RANGE;
+    private Range pageRange = Book.DEFAULT_PAGE_RANGE;
     private String titleSearch;
     private String authorSearch;
 
@@ -16,30 +16,38 @@ public final class BookFilterBuilder {
     }
 
     public BookFilterBuilder subfields(Collection<Integer> subfieldIDs) {
+        this.subfieldIDs.clear();
         Optional.ofNullable(subfieldIDs).orElseThrow(
                 () -> new IllegalArgumentException("subfield collection must not be null")
         ).forEach(this::subfield);
         return this;
     }
 
-    public BookFilterBuilder subfield(int subfieldID) throws IllegalArgumentException {
-        if (subfieldID < 0) {
+    public BookFilterBuilder subfield(int subfieldId) throws IllegalArgumentException {
+        if (subfieldId < 0) {
             throw new IllegalArgumentException("subfield id must not be negativ");
         }
-        subfieldIDs.add(subfieldID);
+        subfieldIDs.add(subfieldId);
         return this;
     }
 
-    public BookFilterBuilder yearRange(int minYear, int maxYear) throws IllegalArgumentException {
-        if (!(minYear >= 1900 && minYear < maxYear)) {
-            throw new IllegalArgumentException(String.format(
-                    "range must be positive and min must be less than max: %d, %d",
-                    minYear,
-                    maxYear
-            ));
-        }
-        this.yearRange = new BookFilter.Range(minYear, maxYear);
+    public BookFilterBuilder removeSubfield(int subfieldId) {
+        subfieldIDs.remove(subfieldId);
         return this;
+    }
+
+    public BookFilterBuilder yearRange(Range yearRange) {
+        this.yearRange = Optional.ofNullable(yearRange).orElseThrow(
+                () -> new IllegalArgumentException("year range must not be null")
+        );
+        return this;
+    }
+
+    public BookFilterBuilder yearRange(int minYear, int maxYear) throws Range.IllegalRangeException {
+        return yearRange(new Range(
+                Book.DEFAULT_YEAR_RANGE.checkRange(minYear),
+                Book.DEFAULT_YEAR_RANGE.checkRange(maxYear)
+        ));
     }
 
     public BookFilterBuilder minYear(int minYear) {
@@ -50,24 +58,26 @@ public final class BookFilterBuilder {
         return yearRange(yearRange.min(), maxYear);
     }
 
-    public BookFilterBuilder pageRange(int minPages, int maxPages) throws IllegalArgumentException {
-        if (!(minPages > 0 && minPages < maxPages)) {
-            throw new IllegalArgumentException(String.format(
-                    "range must be positive and min must be less than max: %d, %d",
-                    minPages,
-                    maxPages
-            ));
-        }
-        this.pageRange = new BookFilter.Range(minPages, maxPages);
+    public BookFilterBuilder pageRange(Range pageRange) {
+        this.pageRange = Optional.ofNullable(pageRange).orElseThrow(
+                () -> new IllegalArgumentException("page range must not be null")
+        );
         return this;
     }
 
-    public BookFilterBuilder maxPages(int maxPage) {
-        return pageRange(pageRange.min(), maxPage);
+    public BookFilterBuilder pageRange(int minPages, int maxPages) throws Range.IllegalRangeException {
+        return pageRange(new Range(
+                Book.DEFAULT_PAGE_RANGE.checkRange(minPages),
+                Book.DEFAULT_PAGE_RANGE.checkRange(maxPages)
+        ));
     }
 
-    public BookFilterBuilder minPages(int minPage) {
-        return pageRange(minPage, pageRange.max());
+    public BookFilterBuilder maxPages(int maxPages) {
+        return pageRange(pageRange.min(), maxPages);
+    }
+
+    public BookFilterBuilder minPages(int minPages) {
+        return pageRange(minPages, pageRange.max());
     }
 
     public BookFilterBuilder searchTitle(String titleSearch) {

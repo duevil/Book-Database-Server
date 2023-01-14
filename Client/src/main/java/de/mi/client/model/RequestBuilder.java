@@ -1,4 +1,4 @@
-package de.mi.model;
+package de.mi.client.model;
 
 import de.mi.common.ClientType;
 import de.mi.common.ServerURI;

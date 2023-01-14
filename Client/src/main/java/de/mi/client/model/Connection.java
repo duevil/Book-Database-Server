@@ -1,4 +1,4 @@
-package de.mi.model;
+package de.mi.client.model;
 
 import de.mi.common.Book;
 import de.mi.common.BookFilter;
@@ -9,6 +9,7 @@ import jakarta.ws.rs.core.GenericType;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class Connection {
     private final RequestBuilder builder;
@@ -35,7 +36,7 @@ public class Connection {
                 .orElse(-1);
     }
 
-    public Optional<List<Subfield>> getSubfields() {
+    public Optional<Set<Subfield>> getSubfields() {
         return builder.path("subfields").requestGET().read(new GenericType<>() {
         });
     }
@@ -62,17 +63,17 @@ public class Connection {
         });
     }
 
-    public boolean changeBook(Book book) {
+    public boolean updateBook(Book book) {
         return builder.path("change").requestPUT(book).success();
     }
 
-    public boolean addBook(Book book) {
+    public boolean createBook(Book book) {
         var b = builder.path("add");
         var c = b.requestPOST(book);
         return c.success();
     }
 
-    public boolean removeBook(Book book) {
+    public boolean deleteBook(Book book) {
         return builder.path("remove").queryParam("id", book.id()).requestDELETE().success();
     }
 }

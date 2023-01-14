@@ -1,4 +1,4 @@
-package de.mi.model;
+package de.mi.client.model;
 
 import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.ServerErrorException;

@@ -19,7 +19,7 @@ public record Subfield(int id, String name) implements Comparable<Subfield> {
 
     @Override
     public String toString() {
-        return "[" + id + "] " + name;
+        return name;
     }
 
     @Override

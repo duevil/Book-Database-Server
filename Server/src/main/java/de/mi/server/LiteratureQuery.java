@@ -16,7 +16,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public final class LiteratureQuery {
     private static final BookFilter EMPTY_FILTER = BookFilter.builder().build();
@@ -36,7 +35,7 @@ public final class LiteratureQuery {
                          FROM authors a
                                   JOIN book_authors ba ON a.id = ba.author_id
                          WHERE ba.book_id = books.id
-                           AND LOWER(CONCAT_WS(a.first_name, a.last_name)) LIKE '%%%s%%')""";
+                           AND LOWER(CONCAT_WS(' ', a.first_name, a.last_name)) LIKE '%%%s%%')""";
     private static final SQLQueryExecutor<Author> BOOK_AUTHOR_EXECUTOR = SQLExecutorFactory.createQuery(
             DBConnection.prepareStatement("""
                     SELECT id, first_name, last_name
@@ -81,7 +80,13 @@ public final class LiteratureQuery {
                 filter.yearRange().max(),
                 filter.pageRange().min(),
                 filter.pageRange().max(),
-                filterSubfieldsToString(filter),
+                Optional.of(filter)
+                        .map(BookFilter::subfieldIDs)
+                        .filter(s -> !s.isEmpty())
+                        .map(Collection::stream)
+                        .orElseGet(() -> SUBFIELDS.stream().map(Subfield::id))
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(",")),
                 filter.authorSearch().orElse("")
         );
 
@@ -101,16 +106,6 @@ public final class LiteratureQuery {
         }
 
         return Collections.unmodifiableSet(books);
-    }
-
-    private static String filterSubfieldsToString(BookFilter filter) {
-        return Optional.of(filter)
-                .map(BookFilter::subfieldIDs)
-                .filter(s -> !s.isEmpty())
-                .map(Collection::stream)
-                .orElse(Stream.of(0))
-                .map(String::valueOf)
-                .collect(Collectors.joining(","));
     }
 
     public static int getNextID(String type) throws SQLException {

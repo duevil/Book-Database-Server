@@ -81,11 +81,11 @@ public class LiteratureRest {
                 .searchTitle(titleSearch)
                 .searchAuthor(authorSearch)
                 .yearRange(
-                        Optional.ofNullable(minYear).orElse(BookFilter.DEFAULT_YEAR_RANGE.min()),
-                        Optional.ofNullable(maxYear).orElse(BookFilter.DEFAULT_YEAR_RANGE.max()))
+                        Optional.ofNullable(minYear).orElse(Book.DEFAULT_YEAR_RANGE.min()),
+                        Optional.ofNullable(maxYear).orElse(Book.DEFAULT_YEAR_RANGE.max()))
                 .pageRange(
-                        Optional.ofNullable(minPages).orElse(BookFilter.DEFAULT_PAGE_RANGE.min()),
-                        Optional.ofNullable(maxPages).orElse(BookFilter.DEFAULT_PAGE_RANGE.max()))
+                        Optional.ofNullable(minPages).orElse(Book.DEFAULT_PAGE_RANGE.min()),
+                        Optional.ofNullable(maxPages).orElse(Book.DEFAULT_PAGE_RANGE.max()))
                 .subfields(subfieldIDs)
                 .build();
         return getBooks(filter);

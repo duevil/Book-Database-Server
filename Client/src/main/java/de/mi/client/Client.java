@@ -1,6 +1,6 @@
 package de.mi.client;
 
-import de.mi.model.ExceptionHandler;
+import de.mi.client.controller.Controller;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -35,8 +35,7 @@ public class Client extends Application {
             );
             var scene = new Scene(loader.load());
             primaryStage.setScene(scene);
-            var con = ((Controller) loader.getController()).getConnection();
-            primaryStage.setTitle(con.getProgrammName() + " [" + con.getClientType().name() + ']');
+            primaryStage.setTitle(((Controller) loader.getController()).getAppName());
             primaryStage.show();
         } catch (NoSuchElementException | IOException e) {
             ExceptionHandler.handle(e);
