@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Optional;
 
 class AuthorMapper implements Mapper<Author> {
-    private static final Author NULL_AUTHOR = new Author(0, null, null);
 
     /**
      * Erzeugt eine neue Instanz aus den Werten,
@@ -17,8 +16,6 @@ class AuthorMapper implements Mapper<Author> {
      */
     @Override
     public Author apply(Map<String, Object> values) {
-        return Optional.ofNullable((Integer) values.get("id"))
-                .map(id -> new Author(id, (String) values.get("first_name"), (String) values.get("last_name")))
-                .orElse(NULL_AUTHOR);
+        return new Author((String) values.get("first_name"), (String) values.get("last_name"));
     }
 }

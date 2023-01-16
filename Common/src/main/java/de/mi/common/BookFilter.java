@@ -8,6 +8,7 @@ public record BookFilter(
         Set<Subfield> subfields,
         Range yearRange,
         Range pageRange,
+        Range ratingRange,
         Optional<String> titleSearch,
         Optional<String> authorSearch
 ) {

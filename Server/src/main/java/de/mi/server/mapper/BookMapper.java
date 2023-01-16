@@ -3,10 +3,8 @@ package de.mi.server.mapper;
 import de.mi.common.Book;
 
 import java.util.Map;
-import java.util.Optional;
 
 class BookMapper implements Mapper<Book> {
-    private static final Book NULL_BOOK = new Book(0, null, null, null, -1, -1, null);
 
     /**
      * Erzeugt eine neue Instanz aus den Werten,
@@ -17,16 +15,14 @@ class BookMapper implements Mapper<Book> {
      */
     @Override
     public Book apply(Map<String, Object> values) {
-        return Optional.ofNullable((Integer) values.get("id"))
-                .map(id -> new Book(
-                        id,
-                        (String) values.get("title"),
-                        null,
-                        (String) values.get("publisher"),
-                        (Integer) values.get("year"),
-                        (Integer) values.get("pages"),
-                        null
-                ))
-                .orElse(NULL_BOOK);
+        return new Book(
+                (String) values.get("title"),
+                null,
+                (String) values.get("publisher"),
+                (Integer) values.get("year"),
+                (Integer) values.get("pages"),
+                (Integer) values.get("rating"),
+                null
+        );
     }
 }

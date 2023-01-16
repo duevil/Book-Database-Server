@@ -18,8 +18,6 @@ import java.util.List;
 import java.util.Set;
 
 class BookProperties {
-    private final IntegerProperty idProperty
-            = new SimpleIntegerProperty(this, "Book id");
     private final StringProperty titleProperty
             = new SimpleStringProperty(this, "Book title");
     private final ListProperty<AuthorProperties> authorsProperty
@@ -30,24 +28,25 @@ class BookProperties {
             = new SimpleStringProperty(this, "Book year");
     private final StringProperty pagesProperty
             = new SimpleStringProperty(this, "Book pages");
+    private final IntegerProperty ratingProperty
+            = new SimpleIntegerProperty(this, "Book rating");
     private final SetProperty<Subfield> subfieldsProperty
             = new SimpleSetProperty<>(this, "Book subfields", FXCollections.observableSet());
 
     public Book get() {
-        int id = PropertyParser.parseInteger(idProperty).getOrThrow();
         String title = PropertyParser.parseString(titleProperty).getOrThrow();
         List<Author> authors = List.copyOf(authorsProperty.stream().map(AuthorProperties::getOrThrow).toList());
         String publisher = PropertyParser.parseString(publisherProperty).getOrThrow();
         int year = PropertyParser.parseInteger(yearProperty, Book.DEFAULT_YEAR_RANGE).getOrThrow();
         int pages = PropertyParser.parseInteger(pagesProperty, Book.DEFAULT_PAGE_RANGE).getOrThrow();
+        int rating = PropertyParser.parseInteger(ratingProperty, Book.DEFAULT_RATING_RANGE).getOrThrow();
         Set<Subfield> subfields = Set.copyOf(subfieldsProperty);
         if (subfields.isEmpty()) throw new IllegalStateException(subfieldsProperty.getName() + " is empty");
 
-        return new Book(id, title, authors, publisher, year, pages, subfields);
+        return new Book(title, authors, publisher, year, pages, rating, subfields);
     }
 
     public void set(Book book) {
-        idProperty.set(book.id());
         titleProperty.set(book.title());
         var authorElements = book.authors()
                 .stream()
@@ -58,6 +57,7 @@ class BookProperties {
         publisherProperty.set(book.publisher());
         yearProperty.set(String.valueOf(book.year()));
         pagesProperty.set(String.valueOf(book.pages()));
+        ratingProperty.set(book.rating());
         subfieldsProperty.clear();
         subfieldsProperty.addAll(book.subfields());
     }

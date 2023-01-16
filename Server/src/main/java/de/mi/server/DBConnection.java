@@ -36,7 +36,7 @@ public final class DBConnection {
             LOGGER.info("""
                     Database properly does not exist.
                     Trying to connect to root server and to create database and user...""");
-            String pass = SimplePrompter.getConsoleInput("Enter password of root user:");
+            String pass = SimplePrompter.getDialogInput("Enter password of root user:");
             if (pass == null) throw new IllegalStateException("password input was canceled");
 
             try (Connection c = DriverManager.getConnection(baseUrl, "root", pass);
@@ -97,5 +97,4 @@ public final class DBConnection {
             }
         }
     }
-
 }
