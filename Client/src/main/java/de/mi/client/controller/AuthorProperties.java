@@ -1,6 +1,5 @@
 package de.mi.client.controller;
 
-import de.mi.client.parser.ParseResult;
 import de.mi.client.parser.PropertyParser;
 import de.mi.common.Author;
 import javafx.beans.property.IntegerProperty;
@@ -22,22 +21,10 @@ class AuthorProperties {
         lastNameProperty.set(author.lastName());
     }
 
-    public Author getOrThrow() {
-        return get(true);
-    }
-
     public Author get() {
-        return get(false);
-    }
-
-    private Author get(boolean check) {
-        ParseResult<Integer> parsedId = PropertyParser.parseInteger(idProperty);
-        ParseResult<String> parsedFirstName = PropertyParser.parseString(firstNameProperty);
-        ParseResult<String> parsedLastName = PropertyParser.parseString(lastNameProperty);
-
-        Integer id = check ? parsedId.getOrThrow() : parsedId.get();
-        String firstName = check ? parsedFirstName.getOrThrow() : parsedFirstName.get();
-        String lastName = check ? parsedLastName.getOrThrow() : parsedLastName.get();
+        int id = PropertyParser.parseInteger(idProperty).getOrThrow();
+        String firstName = PropertyParser.parseString(firstNameProperty).getOrThrow();
+        String lastName = PropertyParser.parseString(lastNameProperty).getOrThrow();
 
         return new Author(id, firstName, lastName);
     }

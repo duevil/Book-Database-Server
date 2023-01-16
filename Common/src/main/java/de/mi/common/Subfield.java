@@ -1,19 +1,20 @@
 package de.mi.common;
 
-import java.util.Objects;
-
-public record Subfield(String name) implements Comparable<Subfield> {
+public record Subfield(int id, String name) implements Comparable<Subfield> {
+    public Subfield {
+        if (id < 0) throw new IllegalArgumentException("id must not be negativ");
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        return Objects.equals(this.name, ((Subfield) o).name);
+        return id == ((Subfield) o).id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name);
+        return id;
     }
 
     @Override
@@ -23,6 +24,6 @@ public record Subfield(String name) implements Comparable<Subfield> {
 
     @Override
     public int compareTo(Subfield subfield) {
-        return Objects.compare(this.name, subfield.name, String::compareTo);
+        return Integer.compare(id, subfield.id);
     }
 }

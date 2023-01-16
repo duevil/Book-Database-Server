@@ -98,24 +98,32 @@ abstract class ControllerBase {
         Service<Void> service = new Service<>() {
             @Override
             protected Task<Void> createTask() {
-                return new Task<>() {
-                    @Override
-                    protected Void call() throws RuntimeException {
-                        try {
-                            Collection<Book> books = (filter
-                                    ? connection.getBooks(filterProperties.getFilter())
-                                    : connection.getBooks()).orElseThrow();
-                            Platform.runLater(() -> bookPreview.setBooks(books));
-                            if (filter) Platform.runLater(ControllerBase.this.selectedBook::clear);
-                        } catch (RuntimeException e) {
-                            ExceptionHandler.handle(e);
-                            throw e;
-                        }
-                        return null;
-                    }
-                };
+                return new BookLoadingTask(filter);
             }
         };
         service.start();
+    }
+
+    private class BookLoadingTask extends Task<Void> {
+        private final boolean filter;
+
+        public BookLoadingTask(boolean filter) {
+            this.filter = filter;
+        }
+
+        @Override
+        protected Void call() throws RuntimeException {
+            try {
+                Collection<Book> books = (filter
+                        ? connection.getBooks(filterProperties.getFilter())
+                        : connection.getBooks()).orElseThrow();
+                Platform.runLater(() -> bookPreview.setBooks(books));
+                if (filter) Platform.runLater(ControllerBase.this.selectedBook::clear);
+            } catch (RuntimeException e) {
+                ExceptionHandler.handle(e);
+                throw e;
+            }
+            return null;
+        }
     }
 }

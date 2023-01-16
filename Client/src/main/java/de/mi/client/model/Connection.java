@@ -7,7 +7,6 @@ import de.mi.common.Subfield;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.GenericType;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -27,14 +26,6 @@ public class Connection {
 
     public String getProgrammName() {
         return builder.requestGET().read(String.class).orElse("null");
-    }
-
-    public int getNextID(Class<?> type) {
-        return builder.path("next_id")
-                .queryParam("type", type.getSimpleName())
-                .requestGET()
-                .read(Integer.class)
-                .orElse(-1);
     }
 
     public Optional<Set<Subfield>> getSubfields() {

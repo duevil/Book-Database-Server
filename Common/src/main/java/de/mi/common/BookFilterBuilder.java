@@ -23,20 +23,11 @@ public final class BookFilterBuilder {
         return this;
     }
 
-    public BookFilterBuilder subfield(Subfield subfield) throws IllegalArgumentException {
+    public void subfield(Subfield subfield) throws IllegalArgumentException {
         if (subfield == null) {
             throw new IllegalArgumentException("subfield id must not be negativ");
         }
         subfields.add(subfield);
-        return this;
-    }
-
-    public BookFilterBuilder removeSubfield(Subfield subfield) {
-        if (subfield == null) {
-            throw new IllegalArgumentException("subfield id must not be negativ");
-        }
-        subfields.remove(subfield);
-        return this;
     }
 
     public BookFilterBuilder yearRange(Range yearRange) {
@@ -53,12 +44,12 @@ public final class BookFilterBuilder {
         ));
     }
 
-    public BookFilterBuilder minYear(int minYear) {
-        return yearRange(minYear, yearRange.max());
+    public void minYear(int minYear) {
+        yearRange(minYear, yearRange.max());
     }
 
-    public BookFilterBuilder maxYear(int maxYear) {
-        return yearRange(yearRange.min(), maxYear);
+    public void maxYear(int maxYear) {
+        yearRange(yearRange.min(), maxYear);
     }
 
     public BookFilterBuilder pageRange(Range pageRange) {
@@ -75,12 +66,12 @@ public final class BookFilterBuilder {
         ));
     }
 
-    public BookFilterBuilder maxPages(int maxPages) {
-        return pageRange(pageRange.min(), maxPages);
+    public void maxPages(int maxPages) {
+        pageRange(pageRange.min(), maxPages);
     }
 
-    public BookFilterBuilder minPages(int minPages) {
-        return pageRange(minPages, pageRange.max());
+    public void minPages(int minPages) {
+        pageRange(minPages, pageRange.max());
     }
 
     public BookFilterBuilder searchTitle(String titleSearch) {
@@ -98,6 +89,7 @@ public final class BookFilterBuilder {
                 subfields,
                 yearRange,
                 pageRange,
+                Book.DEFAULT_RATING_RANGE,
                 Optional.ofNullable(titleSearch),
                 Optional.ofNullable(authorSearch)
         );

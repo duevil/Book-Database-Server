@@ -34,19 +34,23 @@ public final class LiteratureQuery {
                                   JOIN book_authors ba ON a.id = ba.author_id
                          WHERE ba.book_id = books.id
                            AND LOWER(CONCAT_WS(' ', a.first_name, a.last_name)) LIKE '%%%s%%')""";
-    private static final SQLQueryExecutor<Author> BOOK_AUTHOR_EXECUTOR = new SQLQueryExecutor<>(DBConnection.prepareStatement("""
+    private static final SQLQueryExecutor<Author> BOOK_AUTHOR_EXECUTOR
+            = new SQLQueryExecutor<>(DBConnection.prepareStatement("""
             SELECT id, first_name, last_name
             FROM authors JOIN book_authors ON id = author_id
             WHERE book_id = ?"""), LiteratureMapper.AUTHOR_MAPPER);
-    private static final SQLQueryExecutor<Subfield> BOOK_SUBFIELD_EXECUTOR = new SQLQueryExecutor<>(DBConnection.prepareStatement("""
+    private static final SQLQueryExecutor<Subfield> BOOK_SUBFIELD_EXECUTOR
+            = new SQLQueryExecutor<>(DBConnection.prepareStatement("""
             SELECT id, name
             FROM subfields JOIN book_subfields ON id = subfield_id
             WHERE book_id = ?"""), LiteratureMapper.SUBFIELD_MAPPER);
-    private static final SQLQueryExecutor<Author> AUTHOR_EXECUTOR = new SQLQueryExecutor<>(DBConnection.prepareStatement("""
+    private static final SQLQueryExecutor<Author> AUTHOR_EXECUTOR
+            = new SQLQueryExecutor<>(DBConnection.prepareStatement("""
             SELECT id, first_name, last_name
             FROM authors
             WHERE first_name = ? AND last_name = ?"""), LiteratureMapper.AUTHOR_MAPPER);
-    private static final SQLQueryExecutor<Book> BOOK_EXECUTOR = new SQLQueryExecutor<>(DBConnection.prepareStatement("""
+    private static final SQLQueryExecutor<Book> BOOK_EXECUTOR
+            = new SQLQueryExecutor<>(DBConnection.prepareStatement("""
             SELECT id, title, publisher, year, pages
             FROM books
             WHERE title = ?"""), LiteratureMapper.BOOK_MAPPER);
@@ -101,6 +105,7 @@ public final class LiteratureQuery {
                         b.publisher(),
                         b.year(),
                         b.pages(),
+                        b.rating(),
                         Set.copyOf(BOOK_SUBFIELD_EXECUTOR.execute(b.id()))
                 ));
             }

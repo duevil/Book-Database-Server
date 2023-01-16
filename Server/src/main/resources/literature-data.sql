@@ -1,4 +1,3 @@
-# noinspection SqlResolveForFile
 # noinspection SpellCheckingInspectionForFile
 
 INSERT INTO books

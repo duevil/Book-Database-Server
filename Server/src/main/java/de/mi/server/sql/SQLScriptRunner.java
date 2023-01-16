@@ -77,7 +77,7 @@ public class SQLScriptRunner extends SQLExecutor<Void> {
     }
 
     @Override
-    public Void execute(Object... values) throws SQLException, ExecutionException {
+    public Void execute(Object... values) throws SQLException {
         var sb = new StringBuilder();
         try (var scanner = new Scanner(data, Charset.defaultCharset())) {
             Statement statement = getStatement();
@@ -92,11 +92,5 @@ public class SQLScriptRunner extends SQLExecutor<Void> {
             connection.setAutoCommit(origAutoCommit);
         }
         return null;
-    }
-
-    public static final class ExecutionException extends RuntimeException {
-        ExecutionException(Throwable cause) {
-            super(cause);
-        }
     }
 }

@@ -10,10 +10,12 @@ public record Book(
         String publisher,
         int year,
         int pages,
+        int rating,
         Set<Subfield> subfields
 ) {
     public static final Range DEFAULT_YEAR_RANGE = new Range(1920, 2023);
     public static final Range DEFAULT_PAGE_RANGE = new Range(10, 500);
+    public static final Range DEFAULT_RATING_RANGE = new Range(1, 5);
 
     public Book {
         if (id < 0) throw new IllegalArgumentException("id must not be negativ");
