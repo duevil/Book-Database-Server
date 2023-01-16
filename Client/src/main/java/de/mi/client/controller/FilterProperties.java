@@ -51,6 +51,8 @@ class FilterProperties {
         intResult = PropertyParser.parseInteger(maxPagesProperty, Book.DEFAULT_PAGE_RANGE);
         intResult.getOptional().ifPresent(builder::maxPages);
 
+        subfields.stream().map(Subfield::id).forEach(builder::subfield);
+
         return builder.build();
     }
 

@@ -10,7 +10,7 @@ public final class ExceptionHandler {
         var alert = new Alert(Alert.AlertType.ERROR);
         alert.setHeaderText("Eine Ausnahme ist aufgetreten!");
         alert.setContentText(fromThrowable(e));
-        alert.show();
+        alert.showAndWait();
     }
 
     private static String fromThrowable(Throwable e) {

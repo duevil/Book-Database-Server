@@ -45,11 +45,11 @@ class BookProperties {
     public void set(Book book) {
         idProperty.set(book.id());
         titleProperty.set(book.title());
-        authorsProperty.clear();
         var authorElements = book.authors()
                 .stream()
                 .map(AuthorProperties::new)
                 .toList();
+        authorsProperty.clear();
         authorsProperty.addAll(authorElements);
         publisherProperty.set(book.publisher());
         yearProperty.set(String.valueOf(book.year()));

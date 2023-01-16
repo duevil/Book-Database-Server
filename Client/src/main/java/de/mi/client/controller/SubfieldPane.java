@@ -86,9 +86,9 @@ class SubfieldPane extends VBox {
         return editableProperty;
     }
 
-    public void setSelectedSubfields(Set<Subfield> subfields) {
+    public void reset() {
         this.subfieldsProperty.clear();
-        this.subfieldsProperty.addAll(subfields);
+        this.subfieldsProperty.addAll(options);
     }
 
     @SuppressWarnings("java:S2972") // TODO: remove suppression

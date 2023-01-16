@@ -16,7 +16,7 @@ class StringParseResult extends ParseResultBase<String> {
             return null;
         }
 
-        String strVal = value instanceof String s ? s : "";
+        String strVal = value instanceof String s ? s : String.valueOf(value);
         if (strVal.isBlank()) {
             if (throwIfInvalid) throw createException("is blank", null);
             return null;

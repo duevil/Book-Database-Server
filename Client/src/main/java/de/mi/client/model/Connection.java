@@ -7,6 +7,7 @@ import de.mi.common.Subfield;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.GenericType;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -68,9 +69,7 @@ public class Connection {
     }
 
     public boolean createBook(Book book) {
-        var b = builder.path("add");
-        var c = b.requestPOST(book);
-        return c.success();
+        return builder.path("add").requestPOST(book).success();
     }
 
     public boolean deleteBook(Book book) {

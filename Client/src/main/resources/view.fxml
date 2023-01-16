@@ -175,9 +175,9 @@
                 </VBox.margin>
             </Separator>
             <HBox spacing="15.0">
-                <Button fx:id="updateButton" mnemonicParsing="false" onAction="#updateSelection" text="Update"/>
-                <Button mnemonicParsing="false" onAction="#deleteSelection" text="Delete"/>
-                <Button fx:id="createButton" mnemonicParsing="false" onAction="#addNew" text="New"/>
+                <Button fx:id="updateButton" mnemonicParsing="false" onAction="#selectionEvent" text="Update"/>
+                <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#selectionEvent" text="Delete"/>
+                <Button fx:id="createButton" mnemonicParsing="false" onAction="#selectionEvent" text="New"/>
             </HBox>
         </VBox>
     </HBox>
