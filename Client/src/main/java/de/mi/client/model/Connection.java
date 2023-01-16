@@ -57,7 +57,7 @@ public class Connection {
                         .queryParam("max_year", bookFilter.yearRange().max())
                         .queryParam("min_pages", bookFilter.pageRange().min())
                         .queryParam("max_pages", bookFilter.pageRange().max())
-                        .queryParam("subfield", bookFilter.subfieldIDs().toArray())
+                        .queryParam("subfield", bookFilter.subfields().stream().map(Subfield::id).toArray())
                         .requestGET())
                 .orElseGet(bookBuilder::requestGET);
         return books.read(new GenericType<>() {
@@ -65,14 +65,14 @@ public class Connection {
     }
 
     public boolean updateBook(Book book) {
-        return builder.path("change").requestPUT(book).success();
+        return builder.path("update").requestPUT(book).success();
     }
 
     public boolean createBook(Book book) {
-        return builder.path("add").requestPOST(book).success();
+        return builder.path("create").requestPOST(book).success();
     }
 
     public boolean deleteBook(Book book) {
-        return builder.path("remove").queryParam("id", book.id()).requestDELETE().success();
+        return builder.path("delete").queryParam("id", book.id()).requestDELETE().success();
     }
 }

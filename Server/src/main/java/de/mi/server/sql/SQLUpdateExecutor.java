@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 public class SQLUpdateExecutor extends SQLExecutor<Integer> {
 
-    SQLUpdateExecutor(PreparedStatement statement) {
+    public SQLUpdateExecutor(PreparedStatement statement) {
         super(statement);
     }
 

@@ -15,12 +15,12 @@ import java.util.Map;
 public class SQLQueryExecutor<T> extends SQLExecutor<List<T>> {
     private final Mapper<T> mapper;
 
-    SQLQueryExecutor(PreparedStatement statement, Mapper<T> mapper) {
+    public SQLQueryExecutor(PreparedStatement statement, Mapper<T> mapper) {
         super(statement);
         this.mapper = mapper;
     }
 
-    SQLQueryExecutor(Statement statement, String sql, Mapper<T> mapper) {
+    public SQLQueryExecutor(Statement statement, String sql, Mapper<T> mapper) {
         super(statement, sql);
         this.mapper = mapper;
     }

@@ -5,7 +5,7 @@ import java.util.Set;
 
 @SuppressWarnings("java:S1213")
 public record BookFilter(
-        Set<Integer> subfieldIDs,
+        Set<Subfield> subfields,
         Range yearRange,
         Range pageRange,
         Optional<String> titleSearch,

@@ -104,7 +104,7 @@ public final class Controller extends ControllerBase {
         minPages.setOnAction(this::applyFilter);
         maxPages.setOnAction(this::applyFilter);
 
-        var authorPane = new AuthorPane(() -> 0);
+        var authorPane = new AuthorPane();
         authorSelectionPane.setContent(authorPane);
         var subfieldPane = new SubfieldPane(subfields);
         subfieldSelectionPane.setContent(subfieldPane);

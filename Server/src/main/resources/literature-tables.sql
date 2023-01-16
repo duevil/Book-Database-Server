@@ -20,7 +20,8 @@ CREATE TABLE authors
 (
     id         SMALLINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(64) NOT NULL,
-    last_name  VARCHAR(64) NOT NULL
+    last_name  VARCHAR(64) NOT NULL,
+    UNIQUE (first_name, last_name)
 );
 
 DROP TABLE IF EXISTS book_authors;

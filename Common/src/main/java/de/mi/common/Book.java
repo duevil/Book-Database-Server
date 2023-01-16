@@ -1,11 +1,12 @@
 package de.mi.common;
 
+import java.util.List;
 import java.util.Set;
 
 public record Book(
         int id,
         String title,
-        Set<Author> authors,
+        List<Author> authors,
         String publisher,
         int year,
         int pages,

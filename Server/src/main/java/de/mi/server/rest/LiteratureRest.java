@@ -22,6 +22,7 @@ import jakarta.ws.rs.core.Response;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Path("/")
 public class LiteratureRest {
@@ -32,13 +33,6 @@ public class LiteratureRest {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getName() {
         return ResponseFactory.create(() -> "Informatik Fachliteratur");
-    }
-
-    @GET
-    @Path("next_id")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getMaxID(@QueryParam("type") String type) {
-        return ResponseFactory.<Integer, String>create(LiteratureQuery::getNextID, type);
     }
 
     @GET
@@ -86,15 +80,18 @@ public class LiteratureRest {
                 .pageRange(
                         Optional.ofNullable(minPages).orElse(Book.DEFAULT_PAGE_RANGE.min()),
                         Optional.ofNullable(maxPages).orElse(Book.DEFAULT_PAGE_RANGE.max()))
-                .subfields(subfieldIDs)
+                .subfields(LiteratureQuery.getSubfields()
+                        .stream()
+                        .filter(s -> Optional.ofNullable(subfieldIDs).orElse(Set.of()).contains(s.id()))
+                        .collect(Collectors.toSet()))
                 .build();
         return getBooks(filter);
     }
 
     @PUT
-    @Path("change")
+    @Path("update")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response changeBook(
+    public Response updateBook(
             @HeaderParam(HttpHeaders.AUTHORIZATION) ClientType type,
             Book book
     ) {
@@ -105,9 +102,9 @@ public class LiteratureRest {
     }
 
     @POST
-    @Path("add")
+    @Path("create")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response addBook(
+    public Response createBook(
             @HeaderParam(HttpHeaders.AUTHORIZATION) ClientType type,
             Book book
     ) {
@@ -118,7 +115,7 @@ public class LiteratureRest {
     }
 
     @DELETE
-    @Path("remove")
+    @Path("delete")
     public Response deleteBook(
             @HeaderParam(HttpHeaders.AUTHORIZATION) ClientType type,
             @QueryParam("id") int bookID

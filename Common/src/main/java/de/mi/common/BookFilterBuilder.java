@@ -6,7 +6,7 @@ import java.util.Optional;
 
 @SuppressWarnings("java:S109")
 public final class BookFilterBuilder {
-    private final HashSet<Integer> subfieldIDs = new HashSet<>();
+    private final HashSet<Subfield> subfields = new HashSet<>();
     private Range yearRange = Book.DEFAULT_YEAR_RANGE;
     private Range pageRange = Book.DEFAULT_PAGE_RANGE;
     private String titleSearch;
@@ -15,24 +15,27 @@ public final class BookFilterBuilder {
     BookFilterBuilder() {
     }
 
-    public BookFilterBuilder subfields(Collection<Integer> subfieldIDs) {
-        this.subfieldIDs.clear();
-        Optional.ofNullable(subfieldIDs).orElseThrow(
+    public BookFilterBuilder subfields(Collection<Subfield> subfields) {
+        this.subfields.clear();
+        Optional.ofNullable(subfields).orElseThrow(
                 () -> new IllegalArgumentException("subfield collection must not be null")
         ).forEach(this::subfield);
         return this;
     }
 
-    public BookFilterBuilder subfield(int subfieldId) throws IllegalArgumentException {
-        if (subfieldId < 0) {
+    public BookFilterBuilder subfield(Subfield subfield) throws IllegalArgumentException {
+        if (subfield == null) {
             throw new IllegalArgumentException("subfield id must not be negativ");
         }
-        subfieldIDs.add(subfieldId);
+        subfields.add(subfield);
         return this;
     }
 
-    public BookFilterBuilder removeSubfield(int subfieldId) {
-        subfieldIDs.remove(subfieldId);
+    public BookFilterBuilder removeSubfield(Subfield subfield) {
+        if (subfield == null) {
+            throw new IllegalArgumentException("subfield id must not be negativ");
+        }
+        subfields.remove(subfield);
         return this;
     }
 
@@ -92,7 +95,7 @@ public final class BookFilterBuilder {
 
     public BookFilter build() {
         return new BookFilter(
-                subfieldIDs,
+                subfields,
                 yearRange,
                 pageRange,
                 Optional.ofNullable(titleSearch),

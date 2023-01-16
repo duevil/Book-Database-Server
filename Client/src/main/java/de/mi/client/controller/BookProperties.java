@@ -5,13 +5,16 @@ import de.mi.common.Author;
 import de.mi.common.Book;
 import de.mi.common.Subfield;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ListProperty;
 import javafx.beans.property.SetProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleSetProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 
+import java.util.List;
 import java.util.Set;
 
 class BookProperties {
@@ -19,8 +22,8 @@ class BookProperties {
             = new SimpleIntegerProperty(this, "Book id");
     private final StringProperty titleProperty
             = new SimpleStringProperty(this, "Book title");
-    private final SetProperty<AuthorProperties> authorsProperty
-            = new SimpleSetProperty<>(this, "Book authors", FXCollections.observableSet());
+    private final ListProperty<AuthorProperties> authorsProperty
+            = new SimpleListProperty<>(this, "Book authors", FXCollections.observableArrayList());
     private final StringProperty publisherProperty
             = new SimpleStringProperty(this, "Book publisher");
     private final StringProperty yearProperty
@@ -33,11 +36,12 @@ class BookProperties {
     public Book get() {
         int id = PropertyParser.parseInteger(idProperty).getOrThrow();
         String title = PropertyParser.parseString(titleProperty).getOrThrow();
-        Set<Author> authors = Set.copyOf(authorsProperty.stream().map(AuthorProperties::getOrThrow).toList());
+        List<Author> authors = List.copyOf(authorsProperty.stream().map(AuthorProperties::getOrThrow).toList());
         String publisher = PropertyParser.parseString(publisherProperty).getOrThrow();
         int year = PropertyParser.parseInteger(yearProperty, Book.DEFAULT_YEAR_RANGE).getOrThrow();
         int pages = PropertyParser.parseInteger(pagesProperty, Book.DEFAULT_PAGE_RANGE).getOrThrow();
         Set<Subfield> subfields = Set.copyOf(subfieldsProperty);
+        if (subfields.isEmpty()) throw new IllegalStateException(subfieldsProperty.getName() + " is empty");
 
         return new Book(id, title, authors, publisher, year, pages, subfields);
     }
@@ -58,11 +62,21 @@ class BookProperties {
         subfieldsProperty.addAll(book.subfields());
     }
 
+    public void clear() {
+        idProperty.set(0);
+        titleProperty.set(null);
+        authorsProperty.clear();
+        publisherProperty.set(null);
+        yearProperty.set(null);
+        pagesProperty.set(null);
+        subfieldsProperty.clear();
+    }
+
     public StringProperty titleProperty() {
         return titleProperty;
     }
 
-    public SetProperty<AuthorProperties> authorsProperty() {
+    public ListProperty<AuthorProperties> authorsProperty() {
         return authorsProperty;
     }
 

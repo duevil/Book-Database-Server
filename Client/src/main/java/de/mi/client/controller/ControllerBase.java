@@ -16,21 +16,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
 abstract class ControllerBase {
-    protected static final Book EMPTY_BOOK = new Book(
-            0,
-            null,
-            Collections.emptySet(),
-            null,
-            Book.DEFAULT_YEAR_RANGE.min(),
-            Book.DEFAULT_PAGE_RANGE.min(),
-            Collections.emptySet()
-    );
     private final Connection connection = ConnectionFactory.create();
     protected final Set<Subfield> subfields = connection.getSubfields().orElseThrow(
             () -> new NoSuchElementException("No subfields loaded")
@@ -83,7 +73,7 @@ abstract class ControllerBase {
         } else {
             editable.set(true);
             triggerButton.setText("Apply");
-            if (isCreation) selectedBook.set(EMPTY_BOOK);
+            if (isCreation) selectedBook.clear();
         }
     }
 
@@ -116,6 +106,7 @@ abstract class ControllerBase {
                                     ? connection.getBooks(filterProperties.getFilter())
                                     : connection.getBooks()).orElseThrow();
                             Platform.runLater(() -> bookPreview.setBooks(books));
+                            if (filter) Platform.runLater(ControllerBase.this.selectedBook::clear);
                         } catch (RuntimeException e) {
                             ExceptionHandler.handle(e);
                             throw e;

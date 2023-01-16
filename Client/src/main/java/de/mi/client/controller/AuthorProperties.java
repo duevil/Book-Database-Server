@@ -42,18 +42,6 @@ class AuthorProperties {
         return new Author(id, firstName, lastName);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        return get().equals(((AuthorProperties) o).get());
-    }
-
-    @Override
-    public int hashCode() {
-        return get().hashCode();
-    }
-
     public StringProperty firstNameProperty() {
         return firstNameProperty;
     }
