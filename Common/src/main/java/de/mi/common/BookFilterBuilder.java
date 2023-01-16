@@ -6,33 +6,35 @@ import java.util.Optional;
 
 @SuppressWarnings("java:S109")
 public final class BookFilterBuilder {
-    private final HashSet<Integer> subfieldIDs = new HashSet<>();
+    private final HashSet<Subfield> subfields = new HashSet<>();
     private Range yearRange = Book.DEFAULT_YEAR_RANGE;
     private Range pageRange = Book.DEFAULT_PAGE_RANGE;
+    private Range ratingRange = Book.DEFAULT_RATING_RANGE;
     private String titleSearch;
     private String authorSearch;
 
     BookFilterBuilder() {
     }
 
-    public BookFilterBuilder subfields(Collection<Integer> subfieldIDs) {
-        this.subfieldIDs.clear();
-        Optional.ofNullable(subfieldIDs).orElseThrow(
+    public BookFilterBuilder subfields(Collection<Subfield> subfields) {
+        this.subfields.clear();
+        Optional.ofNullable(subfields).orElseThrow(
                 () -> new IllegalArgumentException("subfield collection must not be null")
         ).forEach(this::subfield);
         return this;
     }
 
-    public BookFilterBuilder subfield(int subfieldId) throws IllegalArgumentException {
-        if (subfieldId < 0) {
-            throw new IllegalArgumentException("subfield id must not be negativ");
-        }
-        subfieldIDs.add(subfieldId);
+    public BookFilterBuilder subfield(Subfield subfield) throws IllegalArgumentException {
+        subfields.add(Optional.ofNullable(subfield).orElseThrow(
+                () -> new IllegalArgumentException("subfield must not be null")
+        ));
         return this;
     }
 
-    public BookFilterBuilder removeSubfield(int subfieldId) {
-        subfieldIDs.remove(subfieldId);
+    public BookFilterBuilder removeSubfield(Subfield subfield) {
+        subfields.remove(Optional.ofNullable(subfield).orElseThrow(
+                () -> new IllegalArgumentException("subfield must not be null")
+        ));
         return this;
     }
 
@@ -72,12 +74,34 @@ public final class BookFilterBuilder {
         ));
     }
 
+    public BookFilterBuilder minPages(int minPages) {
+        return pageRange(minPages, pageRange.max());
+    }
+
     public BookFilterBuilder maxPages(int maxPages) {
         return pageRange(pageRange.min(), maxPages);
     }
 
-    public BookFilterBuilder minPages(int minPages) {
-        return pageRange(minPages, pageRange.max());
+    public BookFilterBuilder ratingRange(Range ratingRange) {
+        this.ratingRange = Optional.ofNullable(ratingRange).orElseThrow(
+                () -> new IllegalArgumentException("rating range must not be null")
+        );
+        return this;
+    }
+
+    public BookFilterBuilder ratingRange(int minRating, int maxRating) throws Range.IllegalRangeException {
+        return ratingRange(new Range(
+                Book.DEFAULT_RATING_RANGE.checkRange(minRating),
+                Book.DEFAULT_RATING_RANGE.checkRange(maxRating)
+        ));
+    }
+
+    public BookFilterBuilder minRating(int minRating) {
+        return ratingRange(minRating, ratingRange.max());
+    }
+
+    public BookFilterBuilder maxRating(int maxRating) {
+        return ratingRange(ratingRange.min(), maxRating);
     }
 
     public BookFilterBuilder searchTitle(String titleSearch) {
@@ -92,9 +116,10 @@ public final class BookFilterBuilder {
 
     public BookFilter build() {
         return new BookFilter(
-                subfieldIDs,
+                subfields,
                 yearRange,
                 pageRange,
+                ratingRange,
                 Optional.ofNullable(titleSearch),
                 Optional.ofNullable(authorSearch)
         );

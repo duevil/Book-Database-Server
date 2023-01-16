@@ -23,12 +23,12 @@ import java.util.Set;
 
 abstract class ControllerBase {
     protected static final Book EMPTY_BOOK = new Book(
-            0,
             null,
             Collections.emptySet(),
             null,
             Book.DEFAULT_YEAR_RANGE.min(),
             Book.DEFAULT_PAGE_RANGE.min(),
+            Book.DEFAULT_RATING_RANGE.min(),
             Collections.emptySet()
     );
     private final Connection connection = ConnectionFactory.create();
@@ -68,6 +68,7 @@ abstract class ControllerBase {
     protected final void createOrUpdate(Button triggerButton, boolean isCreation) {
         boolean isEditable = editable.get();
         if (isEditable) {
+            // FIXME: update does not work when changing title as the book uses the title for identification
             boolean success = (isCreation
                     ? getSelectedBook().map(connection::createBook)
                     : getSelectedBook().map(connection::updateBook)).orElse(false);

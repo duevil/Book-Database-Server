@@ -1,20 +1,21 @@
 package de.mi.common;
 
-public record Author(int id, String firstName, String lastName) {
-    public Author {
-        if (id < 0) throw new IllegalArgumentException("id must not be negativ");
-    }
+import java.util.Objects;
+
+public record Author(String firstName, String lastName) {
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        return id == ((Author) o).id;
+        Author that = (Author) o;
+        return Objects.equals(this.firstName, that.firstName) &&
+               Objects.equals(this.lastName, that.lastName);
     }
 
     @Override
     public int hashCode() {
-        return id;
+        return Objects.hash(firstName, lastName);
     }
 
     @Override

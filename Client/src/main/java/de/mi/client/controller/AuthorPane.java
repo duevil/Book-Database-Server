@@ -14,7 +14,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-import java.util.function.IntSupplier;
+import java.util.LinkedList;
 
 @SuppressWarnings("java:S2211") // TODO: remove suppression
 class AuthorPane extends VBox {
@@ -24,7 +24,7 @@ class AuthorPane extends VBox {
     private final BooleanProperty editableProperty = new SimpleBooleanProperty();
 
     @SuppressWarnings("java:S3776") // TODO: remove suppression
-    public AuthorPane(IntSupplier idSupplier) {
+    public AuthorPane() {
         super(SPACING);
         final var children = super.getChildren();
         final Button addNewAuthorButton = new Button("Add");
@@ -36,13 +36,12 @@ class AuthorPane extends VBox {
                 if (editableProperty.get()) children.add(addNewAuthorButton);
             }
             if (c.wasRemoved()) {
-                for (Node child : super.getChildren()) {
-                    if (child instanceof AuthorField authorField &&
-                        authorField.authorProperties.equals(c.getElementRemoved())) {
-                        children.remove(authorField);
-                        break;
-                    }
+                var remove = new LinkedList<AuthorField>();
+                for (Node node : super.getChildren()) {
+                    if (node instanceof AuthorField f &&
+                        f.authorProperties.equals(c.getElementRemoved())) remove.add(f);
                 }
+                super.getChildren().removeAll(remove);
             }
         });
 
@@ -52,7 +51,7 @@ class AuthorPane extends VBox {
         });
 
         addNewAuthorButton.setOnAction(event -> {
-            Author author = new Author(idSupplier.getAsInt(), "", "");
+            Author author = new Author("", "");
             authors.add(new AuthorProperties(author));
         });
     }
@@ -70,7 +69,7 @@ class AuthorPane extends VBox {
 
         private AuthorField(AuthorProperties authorProperties) {
             this.authorProperties = authorProperties;
-            final Label authorLabel = new Label(authorProperties.get().toString());
+            final Label authorLabel = new Label();
             final TextField firstNameField = new TextField();
             final TextField lastNameField = new TextField();
             final Button removeButton = new Button("X");
@@ -90,6 +89,10 @@ class AuthorPane extends VBox {
             lastNameField.setPromptText("last name");
             firstNameField.textProperty().bindBidirectional(authorProperties.firstNameProperty());
             lastNameField.textProperty().bindBidirectional(authorProperties.lastNameProperty());
+            lastNameField.textProperty().bindBidirectional(authorProperties.lastNameProperty());
+            authorLabel.textProperty().bind(firstNameField.textProperty()
+                    .concat(' ')
+                    .concat(lastNameField.textProperty()));
         }
     }
 }

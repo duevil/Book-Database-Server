@@ -13,7 +13,7 @@ import java.util.Scanner;
 public class SQLScriptRunner extends SQLExecutor<Void> {
     private final InputStream data;
 
-    SQLScriptRunner(Statement statement, InputStream data) {
+    public SQLScriptRunner(Statement statement, InputStream data) {
         super(statement, null);
         this.data = data;
     }

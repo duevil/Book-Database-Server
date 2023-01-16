@@ -1,8 +1,7 @@
 DROP TABLE IF EXISTS books;
 CREATE TABLE books
 (
-    id        SMALLINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    title     VARCHAR(128) NOT NULL,
+    title     VARCHAR(128) PRIMARY KEY,
     publisher VARCHAR(128) NOT NULL,
     year      SMALLINT     NOT NULL,
     pages     SMALLINT     NOT NULL
@@ -11,30 +10,30 @@ CREATE TABLE books
 DROP TABLE IF EXISTS subfields;
 CREATE TABLE subfields
 (
-    id   SMALLINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name varchar(64) NOT NULL
+    name VARCHAR(64) PRIMARY KEY
 );
 
 DROP TABLE IF EXISTS authors;
 CREATE TABLE authors
 (
-    id         SMALLINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    first_name VARCHAR(64) NOT NULL,
-    last_name  VARCHAR(64) NOT NULL
+    first_name VARCHAR(64),
+    last_name  VARCHAR(64),
+    PRIMARY KEY (first_name, last_name)
 );
 
 DROP TABLE IF EXISTS book_authors;
 CREATE TABLE book_authors
 (
-    author_id SMALLINT REFERENCES authors (id),
-    book_id   SMALLINT REFERENCES books (id),
-    PRIMARY KEY (author_id, book_id)
+    book VARCHAR(128) REFERENCES books(title),
+    author_first_name VARCHAR(64) REFERENCES authors(first_name),
+    author_last_name VARCHAR(64) REFERENCES authors(last_name),
+    PRIMARY KEY (book, author_first_name, author_last_name)
 );
 
 DROP TABLE IF EXISTS book_subfields;
 CREATE TABLE book_subfields
 (
-    book_id     SMALLINT REFERENCES books (id),
-    subfield_id SMALLINT REFERENCES subfields (id),
-    PRIMARY KEY (book_id, subfield_id)
+    book VARCHAR(128) REFERENCES books(title),
+    subfield VARCHAR(64) REFERENCES subfields(name),
+    PRIMARY KEY (book, subfield)
 );

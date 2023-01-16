@@ -7,7 +7,6 @@ import de.mi.common.Subfield;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.GenericType;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -27,14 +26,6 @@ public class Connection {
 
     public String getProgrammName() {
         return builder.requestGET().read(String.class).orElse("null");
-    }
-
-    public int getNextID(Class<?> type) {
-        return builder.path("next_id")
-                .queryParam("type", type.getSimpleName())
-                .requestGET()
-                .read(Integer.class)
-                .orElse(-1);
     }
 
     public Optional<Set<Subfield>> getSubfields() {
@@ -57,7 +48,9 @@ public class Connection {
                         .queryParam("max_year", bookFilter.yearRange().max())
                         .queryParam("min_pages", bookFilter.pageRange().min())
                         .queryParam("max_pages", bookFilter.pageRange().max())
-                        .queryParam("subfield", bookFilter.subfieldIDs().toArray())
+                        .queryParam("min_rating", bookFilter.ratingRange().min())
+                        .queryParam("max_rating", bookFilter.ratingRange().max())
+                        .queryParam("subfield", bookFilter.subfields().stream().map(Subfield::name).toArray())
                         .requestGET())
                 .orElseGet(bookBuilder::requestGET);
         return books.read(new GenericType<>() {
@@ -73,6 +66,6 @@ public class Connection {
     }
 
     public boolean deleteBook(Book book) {
-        return builder.path("remove").queryParam("id", book.id()).requestDELETE().success();
+        return builder.path("remove").queryParam("book", book.title()).requestDELETE().success();
     }
 }

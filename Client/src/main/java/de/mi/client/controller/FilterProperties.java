@@ -25,6 +25,10 @@ class FilterProperties {
             = new SimpleStringProperty(this, "Filter page range min");
     private final StringProperty maxPagesProperty
             = new SimpleStringProperty(this, "Filter page range max");
+    private final StringProperty minRatingProperty
+            = new SimpleStringProperty(this, "Filter rating range min");
+    private final StringProperty maxRatingProperty
+            = new SimpleStringProperty(this, "Filter rating range max");
     private final SetProperty<Subfield> subfields
             = new SimpleSetProperty<>(this, "Filter subfields", FXCollections.observableSet());
 
@@ -51,7 +55,13 @@ class FilterProperties {
         intResult = PropertyParser.parseInteger(maxPagesProperty, Book.DEFAULT_PAGE_RANGE);
         intResult.getOptional().ifPresent(builder::maxPages);
 
-        subfields.stream().map(Subfield::id).forEach(builder::subfield);
+        /*intResult = PropertyParser.parseInteger(minRatingProperty, Book.DEFAULT_RATING_RANGE);
+        intResult.getOptional().ifPresent(builder::minPages);
+
+        intResult = PropertyParser.parseInteger(maxRatingProperty, Book.DEFAULT_RATING_RANGE);
+        intResult.getOptional().ifPresent(builder::maxPages);*/
+
+        subfields.forEach(builder::subfield);
 
         return builder.build();
     }
@@ -78,6 +88,14 @@ class FilterProperties {
 
     public StringProperty maxPagesProperty() {
         return maxPagesProperty;
+    }
+
+    public StringProperty minRatingPropertyProperty() {
+        return minRatingProperty;
+    }
+
+    public StringProperty maxRatingPropertyProperty() {
+        return maxRatingProperty;
     }
 
     public SetProperty<Subfield> subfieldsProperty() {

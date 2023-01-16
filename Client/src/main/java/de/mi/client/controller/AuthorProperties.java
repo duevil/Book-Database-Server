@@ -3,23 +3,21 @@ package de.mi.client.controller;
 import de.mi.client.parser.ParseResult;
 import de.mi.client.parser.PropertyParser;
 import de.mi.common.Author;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 class AuthorProperties {
-    private final IntegerProperty idProperty
-            = new SimpleIntegerProperty(this, "Author id");
+    private static int count;
+    private final int id;
     private final StringProperty firstNameProperty
             = new SimpleStringProperty(this, "Author first name");
     private final StringProperty lastNameProperty
             = new SimpleStringProperty(this, "Author last name");
 
     public AuthorProperties(Author author) {
-        idProperty.set(author.id());
         firstNameProperty.set(author.firstName());
         lastNameProperty.set(author.lastName());
+        id = count++;
     }
 
     public Author getOrThrow() {
@@ -31,27 +29,12 @@ class AuthorProperties {
     }
 
     private Author get(boolean check) {
-        ParseResult<Integer> parsedId = PropertyParser.parseInteger(idProperty);
         ParseResult<String> parsedFirstName = PropertyParser.parseString(firstNameProperty);
         ParseResult<String> parsedLastName = PropertyParser.parseString(lastNameProperty);
-
-        Integer id = check ? parsedId.getOrThrow() : parsedId.get();
         String firstName = check ? parsedFirstName.getOrThrow() : parsedFirstName.get();
         String lastName = check ? parsedLastName.getOrThrow() : parsedLastName.get();
 
-        return new Author(id, firstName, lastName);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        return get().equals(((AuthorProperties) o).get());
-    }
-
-    @Override
-    public int hashCode() {
-        return get().hashCode();
+        return new Author(firstName, lastName);
     }
 
     public StringProperty firstNameProperty() {

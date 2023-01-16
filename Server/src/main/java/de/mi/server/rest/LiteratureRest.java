@@ -1,8 +1,10 @@
 package de.mi.server.rest;
 
+import de.mi.common.Author;
 import de.mi.common.Book;
 import de.mi.common.BookFilter;
 import de.mi.common.ClientType;
+import de.mi.common.Subfield;
 import de.mi.server.LiteratureQuery;
 import de.mi.server.LiteratureUpdater;
 import jakarta.ws.rs.Consumes;
@@ -20,6 +22,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -35,17 +38,10 @@ public class LiteratureRest {
     }
 
     @GET
-    @Path("next_id")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getMaxID(@QueryParam("type") String type) {
-        return ResponseFactory.<Integer, String>create(LiteratureQuery::getNextID, type);
-    }
-
-    @GET
     @Path("subfields")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSubfields() {
-        return ResponseFactory.create(LiteratureQuery::getSubfields);
+        return ResponseFactory.create(LiteratureQuery::querySubfields);
     }
 
     @GET
@@ -75,7 +71,9 @@ public class LiteratureRest {
             @QueryParam("max_year") Integer maxYear,
             @QueryParam("min_pages") Integer minPages,
             @QueryParam("max_pages") Integer maxPages,
-            @QueryParam("subfield") Set<Integer> subfieldIDs
+            @QueryParam("min_rating") Integer minRating,
+            @QueryParam("max_rating") Integer maxRating,
+            @QueryParam("subfield") Set<String> subfields
     ) {
         BookFilter filter = BookFilter.builder()
                 .searchTitle(titleSearch)
@@ -86,9 +84,19 @@ public class LiteratureRest {
                 .pageRange(
                         Optional.ofNullable(minPages).orElse(Book.DEFAULT_PAGE_RANGE.min()),
                         Optional.ofNullable(maxPages).orElse(Book.DEFAULT_PAGE_RANGE.max()))
-                .subfields(subfieldIDs)
+                .ratingRange(
+                        Optional.ofNullable(minRating).orElse(Book.DEFAULT_RATING_RANGE.min()),
+                        Optional.ofNullable(maxRating).orElse(Book.DEFAULT_RATING_RANGE.max()))
+                .subfields(subfields.stream().map(Subfield::new).toList())
                 .build();
         return getBooks(filter);
+    }
+
+    @GET
+    @Path("authors")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAuthors(@QueryParam("book") String book) {
+        return ResponseFactory.<List<Author>, String>create(LiteratureQuery::queryAuthors, book);
     }
 
     @PUT
@@ -121,11 +129,11 @@ public class LiteratureRest {
     @Path("remove")
     public Response deleteBook(
             @HeaderParam(HttpHeaders.AUTHORIZATION) ClientType type,
-            @QueryParam("id") int bookID
+            @QueryParam("book") String bookTitle
     ) {
         return switch (type) {
             case BASIC -> ResponseFactory.createUnauthorized();
-            case MASTER -> ResponseFactory.create(LiteratureUpdater::deleteBook, bookID);
+            case MASTER -> ResponseFactory.create(LiteratureUpdater::deleteBook, bookTitle);
         };
     }
 
