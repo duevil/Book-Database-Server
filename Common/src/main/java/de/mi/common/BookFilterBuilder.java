@@ -9,6 +9,7 @@ public final class BookFilterBuilder {
     private final HashSet<Subfield> subfields = new HashSet<>();
     private Range yearRange = Book.DEFAULT_YEAR_RANGE;
     private Range pageRange = Book.DEFAULT_PAGE_RANGE;
+    private Range ratingRange = Book.DEFAULT_RATING_RANGE;
     private String titleSearch;
     private String authorSearch;
 
@@ -24,54 +25,32 @@ public final class BookFilterBuilder {
     }
 
     public void subfield(Subfield subfield) throws IllegalArgumentException {
-        if (subfield == null) {
-            throw new IllegalArgumentException("subfield id must not be negativ");
-        }
+        if (subfield == null) throw new IllegalArgumentException("subfield id must not be negativ");
         subfields.add(subfield);
     }
 
-    public BookFilterBuilder yearRange(Range yearRange) {
-        this.yearRange = Optional.ofNullable(yearRange).orElseThrow(
-                () -> new IllegalArgumentException("year range must not be null")
-        );
-        return this;
-    }
-
     public BookFilterBuilder yearRange(int minYear, int maxYear) throws Range.IllegalRangeException {
-        return yearRange(new Range(
+        this.yearRange = new Range(
                 Book.DEFAULT_YEAR_RANGE.checkRange(minYear),
                 Book.DEFAULT_YEAR_RANGE.checkRange(maxYear)
-        ));
-    }
-
-    public void minYear(int minYear) {
-        yearRange(minYear, yearRange.max());
-    }
-
-    public void maxYear(int maxYear) {
-        yearRange(yearRange.min(), maxYear);
-    }
-
-    public BookFilterBuilder pageRange(Range pageRange) {
-        this.pageRange = Optional.ofNullable(pageRange).orElseThrow(
-                () -> new IllegalArgumentException("page range must not be null")
         );
         return this;
     }
 
     public BookFilterBuilder pageRange(int minPages, int maxPages) throws Range.IllegalRangeException {
-        return pageRange(new Range(
+        pageRange = new Range(
                 Book.DEFAULT_PAGE_RANGE.checkRange(minPages),
                 Book.DEFAULT_PAGE_RANGE.checkRange(maxPages)
-        ));
+        );
+        return this;
     }
 
-    public void maxPages(int maxPages) {
-        pageRange(pageRange.min(), maxPages);
-    }
-
-    public void minPages(int minPages) {
-        pageRange(minPages, pageRange.max());
+    public BookFilterBuilder ratingRange(int minRating, int maxRating) throws Range.IllegalRangeException {
+        ratingRange = new Range(
+                Book.DEFAULT_RATING_RANGE.checkRange(minRating),
+                Book.DEFAULT_RATING_RANGE.checkRange(maxRating)
+        );
+        return this;
     }
 
     public BookFilterBuilder searchTitle(String titleSearch) {
@@ -89,9 +68,9 @@ public final class BookFilterBuilder {
                 subfields,
                 yearRange,
                 pageRange,
-                Book.DEFAULT_RATING_RANGE,
-                Optional.ofNullable(titleSearch),
-                Optional.ofNullable(authorSearch)
+                ratingRange,
+                titleSearch,
+                authorSearch
         );
     }
 }

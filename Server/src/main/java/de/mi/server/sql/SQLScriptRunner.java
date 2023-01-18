@@ -10,7 +10,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
 
-public class SQLScriptRunner extends SQLExecutor<Void> {
+@SuppressWarnings({"java:S1133", "java:S1135"}) // TODO: remove suppression
+class SQLScriptRunner extends SQLExecutorBase<Void> {
     private final InputStream data;
 
     public SQLScriptRunner(Statement statement, InputStream data) {
@@ -29,7 +30,7 @@ public class SQLScriptRunner extends SQLExecutor<Void> {
      * @param connection Die Connection zu der Datenbank, für die das Script ausgeführt werden soll
      * @param path       Der Path zur auszuführenden Script-Datei
      * @throws IOException Wenn beim Öffnen der Datei in I/O-Fehler auftritt
-     * @deprecated Klasse wurde als Implementierung von {@link SQLExecutor} ge-refactored;
+     * @deprecated Klasse wurde als Implementierung von {@link SQLExecutorBase} ge-refactored;
      * die Funktionalität dieser Methode wurde in {@link SQLScriptRunner#execute(Object...)} ()} übernommen
      */
     @Deprecated(since = "0.2.7")

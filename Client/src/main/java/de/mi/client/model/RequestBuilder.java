@@ -35,23 +35,23 @@ class RequestBuilder {
         return new RequestBuilder(target.queryParam(name, values), clientType);
     }
 
-    public RequestResult requestGET() {
+    public RequestResult requestGET() throws IllegalArgumentException {
         return createRequest(HttpMethod.GET, null);
     }
 
-    public <T> RequestResult requestPUT(T entity) {
+    public <T> RequestResult requestPUT(T entity) throws IllegalArgumentException {
         return createRequest(HttpMethod.PUT, entity);
     }
 
-    public <T> RequestResult requestPOST(T entity) {
+    public <T> RequestResult requestPOST(T entity) throws IllegalArgumentException {
         return createRequest(HttpMethod.POST, entity);
     }
 
-    public RequestResult requestDELETE() {
+    public RequestResult requestDELETE() throws IllegalArgumentException {
         return createRequest(HttpMethod.DELETE, null);
     }
 
-    private <T> RequestResult createRequest(String method, T entity) {
+    private <T> RequestResult createRequest(String method, T entity) throws IllegalArgumentException {
         var builder = createRequestBuilder();
         Response response = Optional.ofNullable(entity)
                 .map(Entity::json)

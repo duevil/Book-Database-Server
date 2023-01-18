@@ -1,6 +1,5 @@
 package de.mi.common;
 
-import java.util.Optional;
 import java.util.Set;
 
 @SuppressWarnings("java:S1213")
@@ -9,8 +8,8 @@ public record BookFilter(
         Range yearRange,
         Range pageRange,
         Range ratingRange,
-        Optional<String> titleSearch,
-        Optional<String> authorSearch
+        String titleSearch,
+        String authorSearch
 ) {
     public static BookFilterBuilder builder() {
         return new BookFilterBuilder();

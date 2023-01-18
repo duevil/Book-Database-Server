@@ -12,7 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class SQLQueryExecutor<T> extends SQLExecutor<List<T>> {
+class SQLQueryExecutor<T> extends SQLExecutorBase<List<T>> {
     private final Mapper<T> mapper;
 
     public SQLQueryExecutor(PreparedStatement statement, Mapper<T> mapper) {

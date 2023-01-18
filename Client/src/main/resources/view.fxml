@@ -2,9 +2,11 @@
 
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17.0.2-ea"
+<AnchorPane xmlns="http://javafx.com/javafx/17.0.2-ea"
+            xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="de.mi.client.controller.Controller">
     <HBox alignment="CENTER" prefHeight="600.0" prefWidth="1000.0" AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -23,14 +25,22 @@
                     <Font size="16.0"/>
                 </font>
             </Label>
-            <TextField fx:id="titleSearch" promptText="Keyword to search in book titles"/>
+            <TextField fx:id="titleSearch" promptText="Keyword to search in book titles">
+                <cursor>
+                    <Cursor fx:constant="TEXT"/>
+                </cursor>
+            </TextField>
             <Separator opacity="0.0" prefWidth="200.0"/>
             <Label text="Author Search">
                 <font>
                     <Font size="16.0"/>
                 </font>
             </Label>
-            <TextField fx:id="authorSearch" promptText="Keyword to search in book author names"/>
+            <TextField fx:id="authorSearch" promptText="Keyword to search in book author names">
+                <cursor>
+                    <Cursor fx:constant="TEXT"/>
+                </cursor>
+            </TextField>
             <Separator layoutX="25.0" layoutY="133.0" opacity="0.0" prefWidth="200.0"/>
             <Label text="Year range">
                 <font>
@@ -39,9 +49,17 @@
             </Label>
             <HBox alignment="CENTER_LEFT" layoutX="25.0" layoutY="226.0" spacing="5.0">
                 <Label text="From" textFill="GREY"/>
-                <TextField fx:id="minYear" prefHeight="25.0" prefWidth="62.0" promptText="min year"/>
+                <TextField fx:id="minYear" prefHeight="25.0" prefWidth="62.0" promptText="min year">
+                    <cursor>
+                        <Cursor fx:constant="TEXT"/>
+                    </cursor>
+                </TextField>
                 <Label text="to" textFill="GREY"/>
-                <TextField fx:id="maxYear" prefHeight="25.0" prefWidth="62.0" promptText="max year"/>
+                <TextField fx:id="maxYear" prefHeight="25.0" prefWidth="62.0" promptText="max year">
+                    <cursor>
+                        <Cursor fx:constant="TEXT"/>
+                    </cursor>
+                </TextField>
             </HBox>
             <Separator layoutX="25.0" layoutY="329.0" opacity="0.0" prefWidth="200.0"/>
             <Label text="Page range">
@@ -54,11 +72,49 @@
                     <Insets/>
                 </VBox.margin>
                 <Label text="From" textFill="GREY"/>
-                <TextField fx:id="minPages" prefHeight="25.0" prefWidth="72.0" promptText="min pages"/>
+                <TextField fx:id="minPages" prefHeight="25.0" prefWidth="72.0" promptText="min pages">
+                    <cursor>
+                        <Cursor fx:constant="TEXT"/>
+                    </cursor>
+                </TextField>
                 <Label text="to" textFill="GREY"/>
-                <TextField fx:id="maxPages" prefHeight="25.0" prefWidth="72.0" promptText="max pages"/>
+                <TextField fx:id="maxPages" prefHeight="25.0" prefWidth="72.0" promptText="max pages">
+                    <cursor>
+                        <Cursor fx:constant="TEXT"/>
+                    </cursor>
+                </TextField>
             </HBox>
             <Separator layoutX="25.0" layoutY="201.0" opacity="0.0" prefWidth="200.0"/>
+            <Label layoutX="25.0" layoutY="353.0" text="Rating">
+                <font>
+                    <Font size="16.0"/>
+                </font>
+            </Label>
+            <HBox spacing="5.0" VBox.vgrow="NEVER">
+                <Label text="From" textFill="GREY"/>
+                <Label fx:id="minRating" text="min"/>
+                <Slider fx:id="minRatingSlider" blockIncrement="1.0" majorTickUnit="1.0" minorTickCount="0"
+                        prefWidth="72.0" snapToTicks="true" HBox.hgrow="NEVER">
+                    <HBox.margin>
+                        <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
+                    </HBox.margin>
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </Slider>
+                <Label text="to" textFill="GREY"/>
+                <Label fx:id="maxRating" text="max"/>
+                <Slider fx:id="maxRatingSlider" blockIncrement="1.0" majorTickUnit="1.0" minorTickCount="0"
+                        prefWidth="72.0" snapToTicks="true" HBox.hgrow="NEVER">
+                    <HBox.margin>
+                        <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
+                    </HBox.margin>
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </Slider>
+            </HBox>
+            <Separator layoutX="25.0" layoutY="337.0" opacity="0.0" prefWidth="200.0"/>
             <Label text="Subfields">
                 <font>
                     <Font size="16.0"/>
@@ -75,8 +131,16 @@
                 </VBox.margin>
             </Separator>
             <HBox spacing="15.0">
-                <Button mnemonicParsing="false" onAction="#applyFilter" text="Apply"/>
-                <Button mnemonicParsing="false" onAction="#clearFilter" text="Clear"/>
+                <Button mnemonicParsing="false" onAction="#applyFilter" text="Apply">
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </Button>
+                <Button mnemonicParsing="false" onAction="#clearFilter" text="Clear">
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </Button>
             </HBox>
         </VBox>
         <VBox spacing="5.0" HBox.hgrow="ALWAYS">
@@ -111,7 +175,11 @@
                 </font>
             </Label>
             <TextArea fx:id="selectionTitle" prefColumnCount="20" prefRowCount="2" promptText="Selected book's title"
-                      wrapText="true" VBox.vgrow="NEVER"/>
+                      wrapText="true" VBox.vgrow="NEVER">
+                <cursor>
+                    <Cursor fx:constant="TEXT"/>
+                </cursor>
+            </TextArea>
             <Separator opacity="0.0" prefWidth="200.0"/>
             <Label text="Authors">
                 <font>
@@ -134,7 +202,11 @@
                     <Font size="16.0"/>
                 </font>
             </Label>
-            <TextField fx:id="selectionPublisher" editable="false" promptText="Selected book's publisher"/>
+            <TextField fx:id="selectionPublisher" editable="false" promptText="Selected book's publisher">
+                <cursor>
+                    <Cursor fx:constant="TEXT"/>
+                </cursor>
+            </TextField>
             <Separator layoutX="25.0" layoutY="258.0" opacity="0.0" prefWidth="200.0"/>
             <HBox spacing="10.0">
                 <Label text="Year">
@@ -142,7 +214,11 @@
                         <Font size="16.0"/>
                     </font>
                 </Label>
-                <TextField fx:id="selectionYear" editable="false" promptText="Selected book's year"/>
+                <TextField fx:id="selectionYear" editable="false" promptText="Selected book's year">
+                    <cursor>
+                        <Cursor fx:constant="TEXT"/>
+                    </cursor>
+                </TextField>
             </HBox>
             <Separator layoutX="25.0" layoutY="322.0" opacity="0.0" prefWidth="200.0"/>
             <HBox spacing="10.0">
@@ -151,9 +227,22 @@
                         <Font size="16.0"/>
                     </font>
                 </Label>
-                <TextField fx:id="selectionPages" editable="false" promptText="Selected book's pages"/>
+                <TextField fx:id="selectionPages" editable="false" promptText="Selected book's pages">
+                    <cursor>
+                        <Cursor fx:constant="TEXT"/>
+                    </cursor>
+                </TextField>
             </HBox>
             <Separator layoutX="25.0" layoutY="386.0" opacity="0.0" prefWidth="200.0"/>
+            <HBox layoutX="25.0" layoutY="395.0" spacing="10.0">
+                <Label text="Rating">
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                </Label>
+                <Pane fx:id="selectionRatingPane" HBox.hgrow="SOMETIMES"/>
+            </HBox>
+            <Separator layoutX="25.0" layoutY="428.0" opacity="0.0" prefWidth="200.0"/>
             <Label text="Subfields">
                 <font>
                     <Font size="16.0"/>
@@ -175,9 +264,21 @@
                 </VBox.margin>
             </Separator>
             <HBox spacing="15.0">
-                <Button fx:id="updateButton" mnemonicParsing="false" onAction="#selectionEvent" text="Update"/>
-                <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#selectionEvent" text="Delete"/>
-                <Button fx:id="createButton" mnemonicParsing="false" onAction="#selectionEvent" text="New"/>
+                <Button fx:id="updateButton" mnemonicParsing="false" onAction="#selectionEvent" text="Update">
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </Button>
+                <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#selectionEvent" text="Delete">
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </Button>
+                <Button fx:id="createButton" mnemonicParsing="false" onAction="#selectionEvent" text="New">
+                    <cursor>
+                        <Cursor fx:constant="HAND"/>
+                    </cursor>
+                </Button>
             </HBox>
         </VBox>
     </HBox>

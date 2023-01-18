@@ -1,7 +1,7 @@
 package de.mi.server;
 
 import de.mi.server.sql.SQLExceptionHandler;
-import de.mi.server.sql.SQLScriptRunner;
+import de.mi.server.sql.SQLExecutorFactory;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -41,7 +41,7 @@ public final class DBConnection {
 
             try (Connection c = DriverManager.getConnection(baseUrl, "root", pass);
                  var is = ClassLoader.getSystemResourceAsStream("informatik-schema.sql")) {
-                new SQLScriptRunner(c.createStatement(), is).execute();
+                SQLExecutorFactory.createScriptRunner(c.createStatement(), is).execute();
             } catch (IOException ex) {
                 throw new UncheckedIOException(ex);
             }
@@ -51,9 +51,10 @@ public final class DBConnection {
 
     public static void executeResourceScript(String name) throws UncheckedIOException {
         try (var is = ClassLoader.getSystemResourceAsStream(name)) {
-            new SQLScriptRunner(createStatement(), is).execute();
+            SQLExecutorFactory.createScriptRunner(createStatement(), is).execute();
         } catch (SQLException e) {
             SQLExceptionHandler.handle(e, LOGGER);
+            throw new IllegalArgumentException("unable to execute script file", e);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

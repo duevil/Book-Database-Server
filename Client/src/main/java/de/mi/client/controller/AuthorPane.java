@@ -7,6 +7,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -16,18 +17,18 @@ import javafx.scene.layout.VBox;
 
 import java.util.LinkedList;
 
-@SuppressWarnings("java:S2211") // TODO: remove suppression
+@SuppressWarnings({"java:S2211", "java:S2972", "java:S134", "java:S3776", "java:S1135"}) // TODO: remove suppression
 class AuthorPane extends VBox {
     private static final double SPACING = 10D;
     private final ListProperty<AuthorProperties> authors
             = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final BooleanProperty editableProperty = new SimpleBooleanProperty();
 
-    @SuppressWarnings("java:S3776") // TODO: remove suppression
     public AuthorPane() {
         super(SPACING);
         final var children = super.getChildren();
         final Button addNewAuthorButton = new Button("Add");
+        addNewAuthorButton.setCursor(Cursor.HAND);
 
         authors.addListener((ListChangeListener<? super AuthorProperties>) c -> {
             while (c.next()) {
@@ -89,6 +90,7 @@ class AuthorPane extends VBox {
             else children.add(authorLabel);
 
             removeButton.onActionProperty().set(event -> authors.remove(authorProperties));
+            removeButton.setCursor(Cursor.HAND);
             firstNameField.setPromptText("first name");
             lastNameField.setPromptText("last name");
             firstNameField.textProperty().bindBidirectional(authorProperties.firstNameProperty());

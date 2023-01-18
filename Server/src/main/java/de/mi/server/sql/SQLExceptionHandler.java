@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@SuppressWarnings({"java:S1123", "java:S1133", "java:S1135"}) // TODO: remove suppression
 public final class SQLExceptionHandler {
     private SQLExceptionHandler() {
     }
