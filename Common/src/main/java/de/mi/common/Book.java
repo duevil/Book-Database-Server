@@ -3,14 +3,15 @@ package de.mi.common;
 import java.util.List;
 import java.util.Set;
 
+@SuppressWarnings({"java:S1213", "java:S1135"}) // TODO: remove suppression
 public record Book(
         int id,
         String title,
         List<Author> authors,
         String publisher,
-        int year,
-        int pages,
-        int rating,
+        Integer year,
+        Integer pages,
+        Integer rating,
         Set<Subfield> subfields
 ) {
     public static final Range DEFAULT_YEAR_RANGE = new Range(1920, 2023);

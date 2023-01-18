@@ -62,6 +62,7 @@ public class LiteratureRest {
     @GET
     @Path("books/filter")
     @Produces(MediaType.APPLICATION_JSON)
+    @SuppressWarnings({"java:S107", "java:S1135"}) // TODO: remove suppression
     public Response getBooks(
             @QueryParam("title") String titleSearch,
             @QueryParam("author") String authorSearch,
@@ -69,6 +70,8 @@ public class LiteratureRest {
             @QueryParam("max_year") Integer maxYear,
             @QueryParam("min_pages") Integer minPages,
             @QueryParam("max_pages") Integer maxPages,
+            @QueryParam("min_rating") Integer minRating,
+            @QueryParam("max_rating") Integer maxRating,
             @QueryParam("subfield") Set<Integer> subfieldIDs
     ) {
         BookFilter filter = BookFilter.builder()
@@ -80,6 +83,9 @@ public class LiteratureRest {
                 .pageRange(
                         Optional.ofNullable(minPages).orElse(Book.DEFAULT_PAGE_RANGE.min()),
                         Optional.ofNullable(maxPages).orElse(Book.DEFAULT_PAGE_RANGE.max()))
+                .ratingRange(
+                        Optional.ofNullable(minRating).orElse(Book.DEFAULT_RATING_RANGE.min()),
+                        Optional.ofNullable(maxRating).orElse(Book.DEFAULT_RATING_RANGE.max()))
                 .subfields(LiteratureQuery.getSubfields()
                         .stream()
                         .filter(s -> Optional.ofNullable(subfieldIDs).orElse(Set.of()).contains(s.id()))
@@ -95,10 +101,9 @@ public class LiteratureRest {
             @HeaderParam(HttpHeaders.AUTHORIZATION) ClientType type,
             Book book
     ) {
-        return switch (type) {
-            case BASIC -> ResponseFactory.createUnauthorized();
-            case MASTER -> ResponseFactory.create(LiteratureUpdater::updateBook, book);
-        };
+        return type.isMaster()
+            ? ResponseFactory.createUnauthorized()
+            : ResponseFactory.create(LiteratureUpdater::updateBook, book);
     }
 
     @POST
@@ -108,10 +113,9 @@ public class LiteratureRest {
             @HeaderParam(HttpHeaders.AUTHORIZATION) ClientType type,
             Book book
     ) {
-        return switch (type) {
-            case BASIC -> ResponseFactory.createUnauthorized();
-            case MASTER -> ResponseFactory.create(LiteratureUpdater::insertBook, book);
-        };
+        return type.isMaster()
+                ? ResponseFactory.createUnauthorized()
+                : ResponseFactory.create(LiteratureUpdater::insertBook, book);
     }
 
     @DELETE
@@ -120,10 +124,9 @@ public class LiteratureRest {
             @HeaderParam(HttpHeaders.AUTHORIZATION) ClientType type,
             @QueryParam("id") int bookID
     ) {
-        return switch (type) {
-            case BASIC -> ResponseFactory.createUnauthorized();
-            case MASTER -> ResponseFactory.create(LiteratureUpdater::deleteBook, bookID);
-        };
+        return type.isMaster()
+                ? ResponseFactory.createUnauthorized()
+                : ResponseFactory.create(LiteratureUpdater::deleteBook, bookID);
     }
 
     private static class RestApplication extends Application {

@@ -1,11 +1,8 @@
 package de.mi.common;
 
 public record Range(int min, int max) {
-    /**
-     * @throws IllegalRangeException
-     */
     public Range {
-        if (min >= max) throw new IllegalRangeException(min, max);
+        if (min > max) throw new IllegalRangeException(min, max);
     }
 
     public int checkRange(int i) throws OutOfRangeException {
@@ -15,7 +12,7 @@ public record Range(int min, int max) {
 
     public static class IllegalRangeException extends RuntimeException {
         private IllegalRangeException(int min, int max) {
-            super("Min must not be greater or equal to max: %d, %d".formatted(min, max));
+            super("Min must not be greater than max: %d, %d".formatted(min, max));
         }
 
         protected IllegalRangeException(String message) {

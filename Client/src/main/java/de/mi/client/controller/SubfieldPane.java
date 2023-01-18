@@ -8,6 +8,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleSetProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.SetChangeListener;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -19,7 +20,7 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.stream.Stream;
 
-@SuppressWarnings("java:S2211") // TODO: remove suppression
+@SuppressWarnings({"java:S2211", "java:S3366", "java:S2972", "java:S3776", "java:S1135"}) // TODO: remove suppression
 class SubfieldPane extends VBox {
     private static final double SPACING = 10D;
     private final SetProperty<Subfield> subfieldsProperty
@@ -27,12 +28,12 @@ class SubfieldPane extends VBox {
     private final BooleanProperty editableProperty = new SimpleBooleanProperty();
     private final Set<Subfield> options;
 
-    @SuppressWarnings("java:S3776") // TODO: remove suppression
     public SubfieldPane(Set<Subfield> options) {
         super(SPACING);
         this.options = options;
         final var children = super.getChildren();
         final Button addNewSelectionButton = new Button("Add");
+        addNewSelectionButton.setCursor(Cursor.HAND);
 
         subfieldsProperty.addListener((SetChangeListener<? super Subfield>) c -> {
             if (c.wasAdded()) {
@@ -85,20 +86,13 @@ class SubfieldPane extends VBox {
     public BooleanProperty editableProperty() {
         return editableProperty;
     }
-
-    public void reset() {
-        this.subfieldsProperty.clear();
-        this.subfieldsProperty.addAll(options);
-    }
-
-    @SuppressWarnings("java:S2972") // TODO: remove suppression
     private final class SubfieldField extends HBox {
         private final ObjectProperty<Subfield> subfieldProperty;
 
-        @SuppressWarnings("java:S3366") // TODO: remove suppression
         private SubfieldField(Subfield subfield) {
             var items = FXCollections.observableArrayList(options);
             final ComboBox<Subfield> comboBox = new ComboBox<>(items);
+            comboBox.setCursor(Cursor.HAND);
 
             subfieldProperty = comboBox.valueProperty();
             subfieldProperty.setValue(subfield);
@@ -109,6 +103,7 @@ class SubfieldPane extends VBox {
             });
 
             final Button removeButton = new Button("X");
+            removeButton.setCursor(Cursor.HAND);
             removeButton.setOnAction(event -> {
                 boolean multiple = fieldsForSubfield(subfieldProperty.get()).anyMatch(s -> s != this);
                 if (multiple) SubfieldPane.super.getChildren().remove(this);
