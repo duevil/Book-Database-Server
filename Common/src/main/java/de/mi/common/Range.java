@@ -12,7 +12,7 @@ public record Range(int min, int max) {
 
     public static class IllegalRangeException extends RuntimeException {
         private IllegalRangeException(int min, int max) {
-            super("Min must not be greater than max: %d, %d".formatted(min, max));
+            super("Min value must not be greater than max value: %d, %d".formatted(min, max));
         }
 
         protected IllegalRangeException(String message) {
@@ -21,8 +21,9 @@ public record Range(int min, int max) {
     }
 
     public static final class OutOfRangeException extends IllegalRangeException {
+
         private OutOfRangeException(int i, Range r) {
-            super("Number out of range [%d,%d]: %d".formatted(r.min, r.max, i));
+            super("Value is out of range [%d,%d]: %d".formatted(r.min, r.max, i));
         }
     }
 }

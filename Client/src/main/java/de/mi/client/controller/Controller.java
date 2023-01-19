@@ -1,16 +1,23 @@
 package de.mi.client.controller;
 
+import de.mi.common.Book;
+import javafx.application.Platform;
+import javafx.beans.binding.When;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 
-@SuppressWarnings({"java:S1820", "java:S3242", "java:S2211", "java:S1135"}) // TODO: remove suppression
+@SuppressWarnings({"java:S109", "java:S1820", "java:S3242", "java:S2211", "java:S1135"}) // TODO: remove suppression
 public final class Controller extends ControllerBase {
     @FXML
     public ScrollPane subfieldsFilterPane;
@@ -35,11 +42,9 @@ public final class Controller extends ControllerBase {
     @FXML
     public Label maxRating;
     @FXML
-    public ScrollPane previewPane;
-    @FXML
     public TextArea selectionTitle;
     @FXML
-    public ScrollPane authorSelectionPane;
+    public ScrollPane selectionAuthorPane;
     @FXML
     public TextField selectionPublisher;
     @FXML
@@ -49,13 +54,15 @@ public final class Controller extends ControllerBase {
     @FXML
     public Pane selectionRatingPane;
     @FXML
-    public ScrollPane subfieldSelectionPane;
+    public ScrollPane selectionSubfieldsPane;
     @FXML
     public Button updateButton;
     @FXML
     public Button deleteButton;
     @FXML
     public Button createButton;
+    @FXML
+    public ListView<Book> bookView;
 
     @FXML
     public void applyFilter(ActionEvent actionEvent) {
@@ -64,6 +71,7 @@ public final class Controller extends ControllerBase {
 
     @FXML
     public void clearFilter(ActionEvent actionEvent) {
+        selectedBookProperties.clear();
         filterProperties.clear();
         applyFilter(actionEvent);
     }
@@ -71,7 +79,7 @@ public final class Controller extends ControllerBase {
     @FXML
     public void selectionEvent(ActionEvent event) {
         if (event.getSource() instanceof Button triggerButton)
-            selectionAction(triggerButton,
+            selectionAction(
                     triggerButton == updateButton,
                     triggerButton == deleteButton,
                     triggerButton == createButton);
@@ -80,37 +88,59 @@ public final class Controller extends ControllerBase {
     @FXML
     @Override
     public void initialize() {
+        initialiseSelection();
+        initialiseFilter();
+        initialiseButtons();
+        initializeBookView();
+        loadBooks(false);
+    }
 
-        //#region selection initialisation
+    private void initialiseSelection() {
+        var selectionAuthors = new AuthorPane();
+        Util.bindScrollPaneContentOrLabel(
+                selectionAuthorPane,
+                selectionAuthors,
+                "Selected book's authors",
+                selectionAuthors.authorProperties().emptyProperty().not().or(editable));
 
-        var authorPane = new AuthorPane();
-        authorSelectionPane.setContent(authorPane);
-        var ratingPane = new RatingPane();
-        selectionRatingPane.getChildren().add(ratingPane);
-        var subfieldPane = new SubfieldPane(subfields);
-        subfieldSelectionPane.setContent(subfieldPane);
+        var selectionSubfields = new SubfieldPane(model.getSubfields());
+        Util.bindScrollPaneContentOrLabel(
+                selectionSubfieldsPane,
+                selectionSubfields,
+                "Selected book's subfields",
+                selectionSubfields.subfieldsProperty().emptyProperty().not().or(editable));
 
-        Util.bindProperties(selectedBook.titleProperty(), selectionTitle.textProperty());
-        Util.bindProperties(selectedBook.authorsProperty(), authorPane.authorProperties());
-        Util.bindProperties(selectedBook.publisherProperty(), selectionPublisher.textProperty());
-        Util.bindProperties(selectedBook.yearProperty(), selectionYear.textProperty());
-        Util.bindProperties(selectedBook.pagesProperty(), selectionPages.textProperty());
-        Util.bindProperties(selectedBook.ratingProperty(), ratingPane.ratingProperty());
-        Util.bindProperties(selectedBook.subfieldsProperty(), subfieldPane.subfieldsProperty());
+        var selectionRating = new RatingPane();
+        selectionRatingPane.getChildren().add(selectionRating);
+
+        Util.bindProperties(selectedBookProperties.titleProperty(), selectionTitle.textProperty());
+        Util.bindProperties(selectedBookProperties.authorsProperty(), selectionAuthors.authorProperties());
+        Util.bindProperties(selectedBookProperties.publisherProperty(), selectionPublisher.textProperty());
+        Util.bindProperties(selectedBookProperties.yearProperty(), selectionYear.textProperty());
+        Util.bindProperties(selectedBookProperties.pagesProperty(), selectionPages.textProperty());
+        Util.bindProperties(selectedBookProperties.ratingProperty(), selectionRating.ratingProperty());
+        Util.bindProperties(selectedBookProperties.subfieldsProperty(), selectionSubfields.subfieldsProperty());
 
         Util.addFormatter(selectionYear);
         Util.addFormatter(selectionPages);
 
         selectionTitle.editableProperty().bind(editable);
-        authorPane.editableProperty().bind(editable);
+        selectionAuthors.editableProperty().bind(editable);
         selectionPublisher.editableProperty().bind(editable);
         selectionYear.editableProperty().bind(editable);
         selectionPages.editableProperty().bind(editable);
-        ratingPane.editableProperty().bind(editable);
-        subfieldPane.editableProperty().bind(editable);
+        selectionRating.editableProperty().bind(editable);
+        selectionSubfields.editableProperty().bind(editable);
 
-        //#endregion
-        //#region filter initialisation
+        selectionSubfieldsPane.prefHeightProperty().bind(selectionAuthorPane.widthProperty());
+        selectionAuthorPane.prefHeightProperty().bind(selectionSubfieldsPane.widthProperty());
+    }
+
+    private void initialiseFilter() {
+
+        var filterSubfields = new SubfieldPane(model.getSubfields());
+        subfieldsFilterPane.setContent(filterSubfields);
+        filterSubfields.editableProperty().set(true);
 
         Util.bindProperties(filterProperties.titleSearchProperty(), titleSearch.textProperty());
         Util.bindProperties(filterProperties.authorSearchProperty(), authorSearch.textProperty());
@@ -120,14 +150,16 @@ public final class Controller extends ControllerBase {
         Util.bindProperties(filterProperties.maxPagesProperty(), maxPages.textProperty());
         Util.bindProperties(filterProperties.minRatingProperty(), minRatingSlider.valueProperty());
         Util.bindProperties(filterProperties.maxRatingProperty(), maxRatingSlider.valueProperty());
-        Util.bindProperties(filterProperties.subfieldsProperty(), subfieldFilterSelector.subfieldsProperty());
+        Util.bindProperties(filterProperties.subfieldsProperty(), filterSubfields.subfieldsProperty());
 
         filterProperties.clear();
 
-        minRatingSlider.setMin(minRatingSlider.getValue());
-        minRatingSlider.setMax(maxRatingSlider.getValue());
-        maxRatingSlider.setMin(minRatingSlider.getValue());
-        maxRatingSlider.setMax(maxRatingSlider.getValue());
+        var min = minRatingSlider.valueProperty();
+        var max = maxRatingSlider.valueProperty();
+        minRatingSlider.setMin(min.get());
+        maxRatingSlider.setMax(max.get());
+        minRatingSlider.maxProperty().bind(new When(min.lessThanOrEqualTo(max)).then(max.get()).otherwise(max));
+        maxRatingSlider.minProperty().bind(new When(min.lessThanOrEqualTo(max)).then(min.get()).otherwise(min));
 
         Util.addFormatter(minYear);
         Util.addFormatter(maxYear);
@@ -149,14 +181,40 @@ public final class Controller extends ControllerBase {
 
         minRating.textProperty().bind(filterProperties.minRatingProperty().asString());
         maxRating.textProperty().bind(filterProperties.maxRatingProperty().asString());
+    }
 
-        subfieldFilterSelector.editableProperty().set(true);
-        subfieldsFilterPane.setContent(subfieldFilterSelector);
+    private void initialiseButtons() {
+        updateButton.textProperty().bind(new When(isUpdating).then("Apply").otherwise("Update"));
+        createButton.textProperty().bind(new When(isCreating).then("Apply").otherwise("New"));
+    }
 
-        //#endregion
+    private void initializeBookView() {
+        bookView.itemsProperty().bind(model.getLoadedBooks());
+        bookView.disableProperty().bind(editable);
+        bookView.setCellFactory(param -> new ListCell<>() {
+            @Override
+            protected void updateItem(Book book, boolean empty) {
+                super.updateItem(book, empty);
+                if (empty || book == null) setText(null);
+                else {
+                    prefWidthProperty().bind(param.widthProperty().subtract(12));
+                    cursorProperty().bind(new When(editable).then(Cursor.MOVE).otherwise(Cursor.HAND));
+                    setPadding(new Insets(5));
+                    setWrapText(true);
+                    setText(book.title());
+                }
+            }
+        });
+        final var sm = bookView.getSelectionModel();
+        sm.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (editable.get()) return;
+            if (newValue != null) model.selectedBook().set(newValue);
+        });
+        model.selectedBook().addListener((observable, oldValue, newValue) -> {
+            sm.clearSelection();
+            sm.select(newValue);
+        });
 
-        previewPane.setContent(bookPreview);
-
-        loadBooks(false);
+        Platform.runLater(() -> bookView.requestFocus());
     }
 }

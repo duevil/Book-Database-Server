@@ -32,7 +32,7 @@ class SubfieldPane extends VBox {
         super(SPACING);
         this.options = options;
         final var children = super.getChildren();
-        final Button addNewSelectionButton = new Button("Add");
+        final Button addNewSelectionButton = new Button("Add subfield");
         addNewSelectionButton.setCursor(Cursor.HAND);
 
         subfieldsProperty.addListener((SetChangeListener<? super Subfield>) c -> {
@@ -50,7 +50,7 @@ class SubfieldPane extends VBox {
         });
 
         editableProperty.addListener((observable, oldValue, newValue) -> {
-            var map = new HashMap<Comparable<?>, SubfieldField>();
+            var map = new HashMap<Subfield, SubfieldField>();
             for (Node child : children) {
                 if (child instanceof SubfieldField subfieldField) {
                     map.put(subfieldField.subfieldProperty.get(), subfieldField);
@@ -86,6 +86,7 @@ class SubfieldPane extends VBox {
     public BooleanProperty editableProperty() {
         return editableProperty;
     }
+
     private final class SubfieldField extends HBox {
         private final ObjectProperty<Subfield> subfieldProperty;
 

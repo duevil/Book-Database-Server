@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Set;
 
 class BookProperties {
-    private int id = -1;
     private final StringProperty titleProperty
             = new SimpleStringProperty(this, "Book title");
     private final ListProperty<AuthorProperties> authorsProperty
@@ -34,13 +33,14 @@ class BookProperties {
             = new SimpleIntegerProperty(this, "Book rating");
     private final SetProperty<Subfield> subfieldsProperty
             = new SimpleSetProperty<>(this, "Book subfields", FXCollections.observableSet());
+    private int id = -1;
 
     public Book get() throws Util.PropertyException {
 
         String title = Util.readProperty(titleProperty);
         List<Author> authors = Util.readPropertyOptional(authorsProperty)
                 .filter(set -> !set.isEmpty())
-                .orElseThrow(Util.propertyExceptionSupplier(authorsProperty))
+                .orElseThrow(Util.emptyPropertyExceptionSupplier(authorsProperty))
                 .stream()
                 .map(AuthorProperties::get)
                 .toList();
@@ -50,7 +50,7 @@ class BookProperties {
         int rating = Util.readProperty(ratingProperty.asObject(), Book.DEFAULT_RATING_RANGE);
         Set<Subfield> subfields = Util.readPropertyOptional(subfieldsProperty)
                 .filter(set -> !set.isEmpty())
-                .orElseThrow(Util.propertyExceptionSupplier(subfieldsProperty));
+                .orElseThrow(Util.emptyPropertyExceptionSupplier(subfieldsProperty));
 
         return new Book(id, title, authors, publisher, year, pages, rating, subfields);
     }

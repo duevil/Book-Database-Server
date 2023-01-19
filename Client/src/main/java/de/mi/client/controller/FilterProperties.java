@@ -118,7 +118,7 @@ class FilterProperties {
                         Util.readPropertyOptional(minProperty, range).orMin(),
                         Util.readPropertyOptional(maxProperty, range).orMax());
             } catch (Range.IllegalRangeException e) {
-                throw new IllegalArgumentException(name, e);
+                throw Util.createPropertyException(name, e);
             }
         }
     }

@@ -1,164 +1,193 @@
 package de.mi.client.controller;
 
-import de.mi.client.ExceptionHandler;
-import de.mi.client.model.Connection;
-import de.mi.common.Book;
-import de.mi.common.ClientType;
-import de.mi.common.Subfield;
-import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.concurrent.Service;
-import javafx.concurrent.Task;
+import de.mi.client.model.Model;
+import de.mi.common.BookFilter;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.ChoiceDialog;
 
-import java.util.Collection;
-import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Set;
 
-/* TODO
-    -> filter apply prevention on editable
-    -> editable type for invalid apply prevention
-    -> proper alert for invalid input with option for clearing
- */
-
+@SuppressWarnings({"java:S2211", "java:S1135"}) // TODO: remove suppression
 abstract class ControllerBase {
-    protected final BooleanProperty editable = new SimpleBooleanProperty(this, "editable", false);
+    protected final BookProperties selectedBookProperties = new BookProperties();
     protected final FilterProperties filterProperties = new FilterProperties();
-    protected final BookProperties selectedBook = new BookProperties();
-    protected final BookPreview bookPreview = new BookPreview((Book book) -> {
-        if (editable.not().get()) selectedBook.set(book);
-    });
-    private final Connection connection = createConnection();
-    protected final Set<Subfield> subfields = connection.getSubfields().orElseThrow(
-            () -> new NoSuchElementException("No subfields loaded")
-    );
-    protected final SubfieldPane subfieldFilterSelector = new SubfieldPane(subfields);
+    protected final Model model = new Model();
+    private final SimpleObjectProperty<State> state = new SimpleObjectProperty<>(State.NONE);
+    protected final BooleanBinding isUpdating = state.isEqualTo(State.UPDATING);
+    protected final BooleanBinding isCreating = state.isEqualTo(State.CREATING);
+    protected final BooleanBinding editable = isUpdating.or(isCreating);
 
-    private static Connection createConnection() {
-        var dialog = new ChoiceDialog<>(null, ClientType.values());
-        dialog.setHeaderText("Wähle die Art des Clients");
-        return dialog.showAndWait()
-                .map(Connection::new)
-                .orElseGet(() -> {
-                    var alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setHeaderText("Kein Client Typ ausgewählt!");
-                    alert.setContentText("Das Programm wird geschlossen ...");
-                    alert.showAndWait();
-                    System.exit(0);
-                    return null;
-                });
+    protected ControllerBase() {
+        isCreating.addListener((observable, oldValue, newValue) -> {
+            if (Boolean.TRUE.equals(newValue)) model.selectedBook().set(null);
+        });
+        model.selectedBook().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) selectedBookProperties.set(newValue);
+            else selectedBookProperties.clear();
+        });
+        model.setOnFailAction(() -> {
+            state.set(State.NONE);
+            model.selectedBook().set(null);
+        });
+    }
+
+    private static <X extends Throwable> String getCauseMsg(X e) {
+        return Optional.of(e)
+                .map(Throwable::getCause)
+                .map(Throwable::getMessage)
+                .map("%nReason: %s"::formatted)
+                .orElse("");
+    }
+
+    public final SimpleObjectProperty<String> getAppName() {
+        return model.getProgrammName();
     }
 
     public abstract void initialize();
 
-    protected final void selectionAction(Button triggerButton, boolean isUpdate, boolean isDelete, boolean isCreate) {
-        if (!connection.getClientType().isMaster()) {
-            throw new IllegalCallerException("client is not master");
-        } else if (isUpdate) {
-            // TODO
-            createOrUpdate(triggerButton, false);
-        } else if (isDelete) {
-            // TODO
-            delete();
-        } else if (isCreate) {
-            // TODO
-            createOrUpdate(triggerButton, true);
-        } else {
-            throw new IllegalArgumentException("action is neither of update, delete or create");
-        }
-    }
-
-    protected final void delete() {
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setHeaderText("Löschen bestätigen");
-        confirm.setContentText("Soll das Buch '" +
-                               selectedBook.titleProperty().get() +
-                               "' wirklich gelöscht werden?");
-        var result = confirm.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            boolean success = getSelectedBook().map(connection::deleteBook).orElse(false);
-            Alert alert = new Alert(success
-                    ? Alert.AlertType.INFORMATION
-                    : Alert.AlertType.WARNING);
-            alert.setHeaderText(success
-                    ? "Das Löschen war erfolgreich"
-                    : "Buch konnte nicht gelöscht werden");
-            alert.showAndWait();
-            if (success) loadBooks(false);
-        }
-    }
-
-    protected final void createOrUpdate(Button triggerButton, boolean isCreation) {
-        boolean isEditable = editable.get();
-        if (isEditable) {
-            boolean success = (isCreation
-                    ? getSelectedBook().map(connection::createBook)
-                    : getSelectedBook().map(connection::updateBook)).orElse(false);
-            if (success) {
-                editable.set(false);
-                triggerButton.setText(isCreation ? "New" : "Update");
-                loadBooks(false);
-            } else {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setHeaderText("Aktion konnte nicht durchgeführt werden");
-                alert.showAndWait();
-            }
-        } else {
-            editable.set(true);
-            triggerButton.setText("Apply");
-            if (isCreation) selectedBook.clear();
-        }
-    }
-
-    public String getAppName() {
-        return String.format("%s [%s]", connection.getProgrammName(), connection.getClientType().name());
-    }
-
-    protected final Optional<Book> getSelectedBook() {
+    protected final void selectionAction(boolean isUpdate, boolean isDelete, boolean isCreate) {
         try {
-            return Optional.of(selectedBook.get());
-        } catch (RuntimeException e) {
-            ExceptionHandler.handle(e);
+            if (isUpdate) updateBook();
+            else if (isDelete) deleteBook();
+            else if (isCreate) createBook();
+            else throw new IllegalArgumentException("Action is neither of update, delete or create");
+        } catch (Util.PropertyException e) {
+
+            if (state.get() == State.DELETING) {
+                var alert = new Alert(Alert.AlertType.WARNING);
+                alert.setHeaderText("Can't perform delete action due to invalid value(s)");
+                alert.setContentText(String.format("Cause: %s%s",
+                        e.getMessage(),
+                        getCauseMsg(e)));
+                alert.showAndWait();
+                state.set(State.NONE);
+            } else {
+                var alert = new Alert(
+                        Alert.AlertType.WARNING,
+                        null,
+                        new ButtonType("Abort", ButtonBar.ButtonData.OK_DONE),
+                        new ButtonType("Continue", ButtonBar.ButtonData.CANCEL_CLOSE));
+                alert.setHeaderText("Invalid Book Value(s)");
+                alert.setContentText(String.format("For: %s%s%nClear values and abort action?",
+                        e.getMessage(),
+                        getCauseMsg(e)));
+                alert.showAndWait().ifPresent((ButtonType type) -> {
+                    if (type.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+                        state.set(State.NONE);
+                        model.selectedBook().set(null);
+                    }
+                });
+            }
+
+        }
+    }
+
+    private void updateBook() {
+        switch (state.get()) {
+            case NONE -> state.set(State.UPDATING);
+            case UPDATING -> {
+                model.updateBook(selectedBookProperties.get());
+                state.set(State.NONE);
+                loadBooks(false);
+            }
+            default -> alertCantPerformAction(State.UPDATING.toString());
+        }
+    }
+
+    private void createBook() {
+        switch (state.get()) {
+            case NONE -> state.set(State.CREATING);
+            case CREATING -> {
+                model.createBook(selectedBookProperties.get());
+                state.set(State.NONE);
+                loadBooks(false);
+            }
+            default -> alertCantPerformAction(State.CREATING.toString());
+        }
+    }
+
+    private void deleteBook() {
+        if (state.get() == State.NONE) {
+            state.set(State.DELETING);
+            var alert = new Alert(
+                    Alert.AlertType.CONFIRMATION,
+                    null,
+                    new ButtonType("Delete", ButtonBar.ButtonData.OK_DONE),
+                    new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE));
+            alert.setHeaderText("Confirm Deletion");
+            alert.setContentText("Should the book '" +
+                                 selectedBookProperties.titleProperty().get() +
+                                 "' really be deleted?");
+            alert.showAndWait()
+                    .map(ButtonType::getButtonData)
+                    .map(t -> t.isDefaultButton() ? selectedBookProperties.get() : null)
+                    .ifPresent(model::deleteBook);
+            state.set(State.NONE);
+            loadBooks(false);
+        } else alertCantPerformAction(State.DELETING.toString());
+    }
+
+    private Optional<BookFilter> getFilter() {
+        try {
+            return Optional.of(filterProperties.get());
+        } catch (Util.PropertyException e) {
+
+            var alert = new Alert(
+                    Alert.AlertType.WARNING,
+                    null,
+                    new ButtonType("Abort", ButtonBar.ButtonData.OK_DONE),
+                    new ButtonType("Continue", ButtonBar.ButtonData.CANCEL_CLOSE));
+            alert.setHeaderText("Invalid Filter Value(s)");
+            alert.setContentText(String.format("For: %s%s%nClear values and abort action?",
+                    e.getMessage(),
+                    getCauseMsg(e)));
+            alert.showAndWait().ifPresent((ButtonType type) -> {
+                if (type.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+                    filterProperties.clear();
+                    loadBooks(false);
+                }
+            });
+
             return Optional.empty();
         }
     }
 
     protected final void loadBooks(boolean filter) {
-        Service<Void> service = new Service<>() {
-            @Override
-            protected Task<Void> createTask() {
-                return new BookLoadingTask(filter);
-            }
-        };
-        service.start();
+        if (filter) {
+            if (state.get() == State.NONE) {
+                model.selectedBook().set(null);
+                getFilter().ifPresent(model::loadBooks);
+            } else alertCantPerformAction("applying filter");
+        } else {
+            model.loadBooks();
+            filterProperties.clear();
+        }
     }
 
-    private class BookLoadingTask extends Task<Void> {
-        private final boolean filter;
+    private void alertCantPerformAction(String reason) {
+        var alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setHeaderText("Action can currently not be performed");
+        Optional.ofNullable(reason)
+                .map("%%s during %s is not allowed".formatted(state.get())::formatted)
+                .map(s -> Character.toUpperCase(s.charAt(0)) + s.substring(1))
+                .ifPresent(alert::setContentText);
+        alert.showAndWait();
+    }
 
-        public BookLoadingTask(boolean filter) {
-            this.filter = filter;
-        }
+    private enum State {
+        NONE, UPDATING, DELETING, CREATING;
 
         @Override
-        protected Void call() throws RuntimeException {
-            try {
-                Collection<Book> books = (filter
-                        ? connection.getBooks(filterProperties.get())
-                        : connection.getBooks()).orElseThrow();
-                Platform.runLater(() -> bookPreview.setBooks(books));
-                if (filter) Platform.runLater(ControllerBase.this.selectedBook::clear);
-                else Platform.runLater(filterProperties::clear);
-            } catch (RuntimeException e) {
-                Platform.runLater(() -> ExceptionHandler.handle(e));
-                throw e;
-            }
-            return null;
+        public String toString() {
+            return switch (this) {
+                case NONE -> null;
+                case UPDATING -> "book editing";
+                case DELETING -> "book deletion";
+                case CREATING -> "book creation";
+            };
         }
     }
 }

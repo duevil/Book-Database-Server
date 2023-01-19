@@ -27,9 +27,9 @@ public class BookReader {
                     # (C) Malte Kasolowsky 2023
                                     
                     USE informatik;
-                    
+                                        
                     # ------ table books ------
-                    
+                                        
                     DROP TABLE IF EXISTS books;
                     CREATE TABLE books
                     (
@@ -40,18 +40,18 @@ public class BookReader {
                         pages     SMALLINT     NOT NULL,
                         rating    SMALLINT     NOT NULL
                     );
-                    
+                                        
                     # ------ table subfields ------
-                    
+                                        
                     DROP TABLE IF EXISTS subfields;
                     CREATE TABLE subfields
                     (
                         id   SMALLINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
                         name varchar(64) NOT NULL
                     );
-                    
+                                        
                     # ------ table authors ------
-                    
+                                        
                     DROP TABLE IF EXISTS authors;
                     CREATE TABLE authors
                     (
@@ -60,9 +60,9 @@ public class BookReader {
                         last_name  VARCHAR(64) NOT NULL,
                         UNIQUE (first_name, last_name)
                     );
-                    
+                                        
                     # ------ table book authors ------
-                    
+                                        
                     DROP TABLE IF EXISTS book_authors;
                     CREATE TABLE book_authors
                     (
@@ -70,9 +70,9 @@ public class BookReader {
                         book_id   SMALLINT REFERENCES books (id),
                         PRIMARY KEY (author_id, book_id)
                     );
-                    
+                                        
                     # ------ table book subfields ------
-                    
+                                        
                     DROP TABLE IF EXISTS book_subfields;
                     CREATE TABLE book_subfields
                     (

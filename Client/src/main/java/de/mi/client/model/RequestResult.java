@@ -1,42 +1,31 @@
 package de.mi.client.model;
 
-import jakarta.ws.rs.ClientErrorException;
-import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.Response;
-
-import java.util.Optional;
 
 class RequestResult {
     private final Response response;
 
     RequestResult(Response response) {
-        this.response = response;
+        if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL)
+            this.response = response;
+        else if (response.hasEntity())
+            try (response) {
+                throw new WebApplicationException(response.readEntity(Throwable.class), response);
+            }
+        else throw new WebApplicationException(response);
     }
 
-    private static boolean checkResponse(Response response) throws WebApplicationException {
-        return switch (response.getStatusInfo().getFamily()) {
-            case SUCCESSFUL -> true;
-            case CLIENT_ERROR -> throw new ClientErrorException(response);
-            case SERVER_ERROR -> throw new ServerErrorException(response);
-            default -> false;
-        };
+    public <T> T read(GenericType<T> type) {
+        try (response) {
+            return response.readEntity(type);
+        }
     }
 
-    public boolean success() throws WebApplicationException {
-        return checkResponse(response);
-    }
-
-    public <T> Optional<T> read(GenericType<T> type) throws WebApplicationException {
-        return Optional.of(response)
-                .filter(RequestResult::checkResponse)
-                .flatMap(r -> Optional.ofNullable(type).map(r::readEntity));
-    }
-
-    public <T> Optional<T> read(Class<T> type) throws WebApplicationException {
-        return Optional.of(response)
-                .filter(RequestResult::checkResponse)
-                .flatMap(r -> Optional.ofNullable(type).map(r::readEntity));
+    public <T> T read(Class<T> type) {
+        try (response) {
+            return response.readEntity(type);
+        }
     }
 }

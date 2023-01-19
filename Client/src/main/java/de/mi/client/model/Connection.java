@@ -12,34 +12,31 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public class Connection {
-    private final RequestBuilder builder;
+class Connection {
     private final ClientType clientType;
 
     public Connection(ClientType clientType) {
+
         this.clientType = clientType;
-        builder = new RequestBuilder(ClientBuilder.newClient(), clientType);
     }
 
-    public ClientType getClientType() {
-        return clientType;
+    public String getProgrammName() throws WebApplicationException {
+        return String.format("%s [%s]",
+                getBuilder().requestGET().read(String.class),
+                clientType);
     }
 
-    public String getProgrammName() throws IllegalArgumentException, WebApplicationException {
-        return builder.requestGET().read(String.class).orElse("null");
-    }
-
-    public Optional<Set<Subfield>> getSubfields() throws IllegalArgumentException, WebApplicationException {
-        return builder.path("subfields").requestGET().read(new GenericType<>() {
+    public Set<Subfield> getSubfields() throws WebApplicationException {
+        return getBuilder().path("subfields").requestGET().read(new GenericType<>() {
         });
     }
 
-    public Optional<List<Book>> getBooks() throws IllegalArgumentException, WebApplicationException {
+    public List<Book> getBooks() throws WebApplicationException {
         return getBooks(null);
     }
 
-    public Optional<List<Book>> getBooks(BookFilter filter) throws IllegalArgumentException, WebApplicationException {
-        final var bookBuilder = builder.path("books");
+    public List<Book> getBooks(BookFilter filter) throws WebApplicationException {
+        final var bookBuilder = getBuilder().path("books");
         var books = Optional.ofNullable(filter)
                 //.map(bookBuilder::requestPUT) // not working :(
                 .map(bookFilter -> bookBuilder.path("filter")
@@ -58,15 +55,19 @@ public class Connection {
         });
     }
 
-    public boolean updateBook(Book book) throws IllegalArgumentException, WebApplicationException {
-        return builder.path("update").requestPUT(book).success();
+    public void updateBook(Book book) throws WebApplicationException {
+        getBuilder().path("update").requestPUT(book);
     }
 
-    public boolean createBook(Book book) throws IllegalArgumentException, WebApplicationException {
-        return builder.path("create").requestPOST(book).success();
+    public void createBook(Book book) throws WebApplicationException {
+        getBuilder().path("create").requestPOST(book);
     }
 
-    public boolean deleteBook(Book book) throws IllegalArgumentException, WebApplicationException {
-        return builder.path("delete").queryParam("id", book.id()).requestDELETE().success();
+    public void deleteBook(Book book) throws WebApplicationException {
+        getBuilder().path("delete").queryParam("id", book.id()).requestDELETE();
+    }
+
+    private RequestBuilder getBuilder() {
+        return new RequestBuilder(ClientBuilder.newClient(), clientType);
     }
 }

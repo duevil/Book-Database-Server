@@ -20,10 +20,14 @@ final class ResponseFactory {
             if (!(function instanceof ExConsumer)) response = Response.ok(entity);
         } catch (SQLException e) {
             SQLExceptionHandler.handle(e, LOGGER);
-            response = Response.serverError();
+            Throwable entity = new Throwable("An error during database communication occurred");
+            response = Response.serverError().entity(entity);
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.INFO, "Client request had bad arguments", e);
-            response = Response.status(Response.Status.BAD_REQUEST);
+            response = Response.status(Response.Status.BAD_REQUEST).entity(e);
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Unexpected exception was thrown", e);
+            response = Response.serverError().entity(e);
         }
         return response.build();
     }
@@ -37,6 +41,7 @@ final class ResponseFactory {
     }
 
     public static Response createUnauthorized() {
-        return Response.status(Response.Status.UNAUTHORIZED).build();
+        Throwable entity = new IllegalCallerException("Insufficient privileges to perform the request");
+        return Response.status(Response.Status.UNAUTHORIZED).entity(entity).build();
     }
 }

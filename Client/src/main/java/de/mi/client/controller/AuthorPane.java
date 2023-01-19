@@ -27,7 +27,7 @@ class AuthorPane extends VBox {
     public AuthorPane() {
         super(SPACING);
         final var children = super.getChildren();
-        final Button addNewAuthorButton = new Button("Add");
+        final Button addNewAuthorButton = new Button("Add author");
         addNewAuthorButton.setCursor(Cursor.HAND);
 
         authors.addListener((ListChangeListener<? super AuthorProperties>) c -> {
@@ -40,8 +40,7 @@ class AuthorPane extends VBox {
                 if (c.wasRemoved()) {
                     var removed = new LinkedList<AuthorField>();
                     for (Node child : children) {
-                        if (child instanceof AuthorField f &&
-                            c.getRemoved().contains(f.authorProperties)) {
+                        if (child instanceof AuthorField f && c.getRemoved().contains(f.authorProperties)) {
                             removed.add(f);
                         }
                     }
@@ -75,29 +74,27 @@ class AuthorPane extends VBox {
         private AuthorField(AuthorProperties authorProperties) {
             this.authorProperties = authorProperties;
             final Label authorLabel = new Label();
-            final TextField firstNameField = new TextField();
-            final TextField lastNameField = new TextField();
+            final TextField firstName = new TextField();
+            final TextField lastName = new TextField();
             final Button removeButton = new Button("X");
             final var children = super.getChildren();
 
             editableProperty.addListener((observable, oldValue, newValue) -> {
                 children.clear();
                 if (Boolean.FALSE.equals(newValue)) children.add(authorLabel);
-                else children.addAll(firstNameField, lastNameField, removeButton);
+                else children.addAll(firstName, lastName, removeButton);
             });
 
-            if (editableProperty.get()) children.addAll(firstNameField, lastNameField, removeButton);
-            else children.add(authorLabel);
-
-            removeButton.onActionProperty().set(event -> authors.remove(authorProperties));
+            removeButton.setOnAction(event -> authors.remove(authorProperties));
             removeButton.setCursor(Cursor.HAND);
-            firstNameField.setPromptText("first name");
-            lastNameField.setPromptText("last name");
-            firstNameField.textProperty().bindBidirectional(authorProperties.firstNameProperty());
-            lastNameField.textProperty().bindBidirectional(authorProperties.lastNameProperty());
-            authorLabel.textProperty().bind(firstNameField.textProperty()
-                    .concat(' ')
-                    .concat(lastNameField.textProperty()));
+            firstName.setPromptText("first name");
+            lastName.setPromptText("last name");
+            firstName.textProperty().bindBidirectional(authorProperties.firstNameProperty());
+            lastName.textProperty().bindBidirectional(authorProperties.lastNameProperty());
+            authorLabel.textProperty().bind(firstName.textProperty().concat(' ').concat(lastName.textProperty()));
+
+            if (editableProperty.get()) children.addAll(firstName, lastName, removeButton);
+            else children.add(authorLabel);
         }
     }
 }

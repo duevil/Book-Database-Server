@@ -2,11 +2,17 @@ package de.mi.client.controller;
 
 import de.mi.common.Range;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanExpression;
+import javafx.beans.binding.When;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.property.StringProperty;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextInputControl;
+import javafx.scene.paint.Color;
 import javafx.util.converter.IntegerStringConverter;
 
 import java.util.Optional;
@@ -18,6 +24,7 @@ final class Util {
     private static final Pattern REGEX = Pattern.compile("^\\d*$");
     private static final UnaryOperator<TextFormatter.Change> FILTER
             = c -> REGEX.matcher(c.getControlNewText()).matches() ? c : null;
+    private static final Color COLOR = Color.GRAY.interpolate(Color.LIGHTGRAY, 0.75);
 
     private Util() {
     }
@@ -52,21 +59,31 @@ final class Util {
         return new RangedOptional(property, range);
     }
 
-    public static Supplier<PropertyException> propertyExceptionSupplier(ReadOnlyProperty<?> property) {
-        return () -> new PropertyException(property, null);
+    public static Supplier<PropertyException> emptyPropertyExceptionSupplier(ReadOnlyProperty<?> property) {
+        return () -> new PropertyException(property, new IllegalStateException("Value must not be empty"));
+    }
+
+    public static PropertyException createPropertyException(String name, Throwable cause) {
+        return new PropertyException(name, cause);
+    }
+
+    static void bindScrollPaneContentOrLabel(ScrollPane pane,
+                                             Node content,
+                                             String labelText,
+                                             BooleanExpression condition) {
+        var label = new Label(labelText);
+        label.setTextFill(COLOR);
+        pane.contentProperty().bind(new When(condition).then(content).otherwise(label));
     }
 
     public static final class PropertyException extends IllegalStateException {
-        private final transient ReadOnlyProperty<?> property;
 
         private PropertyException(ReadOnlyProperty<?> property, Throwable cause) {
-            super(property.getName(), cause);
-            this.property = property;
+            this(property.getName(), cause);
         }
 
-        @SuppressWarnings("unchecked")
-        public <T> ReadOnlyProperty<T> getProperty() {
-            return (ReadOnlyProperty<T>) property;
+        private PropertyException(String name, Throwable cause) {
+            super(name, cause);
         }
     }
 
@@ -78,15 +95,15 @@ final class Util {
         }
 
         private T get() {
-            return getOptional().orElseThrow(this::exception);
+            return getOptional().filter(this::testString).orElseThrow(emptyPropertyExceptionSupplier(property));
         }
 
         private Optional<T> getOptional() {
-            return Optional.of(property).map(ReadOnlyProperty::getValue);
+            return Optional.ofNullable(property.getValue());
         }
 
-        private PropertyException exception() {
-            return new PropertyException(property, new IllegalStateException("is null"));
+        private boolean testString(T t) {
+            return !(t instanceof String s && s.trim().isEmpty());
         }
     }
 

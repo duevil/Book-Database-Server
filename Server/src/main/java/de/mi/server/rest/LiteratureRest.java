@@ -102,8 +102,8 @@ public class LiteratureRest {
             Book book
     ) {
         return type.isMaster()
-            ? ResponseFactory.createUnauthorized()
-            : ResponseFactory.create(LiteratureUpdater::updateBook, book);
+                ? ResponseFactory.create(LiteratureUpdater::updateBook, book)
+                : ResponseFactory.createUnauthorized();
     }
 
     @POST
@@ -114,8 +114,8 @@ public class LiteratureRest {
             Book book
     ) {
         return type.isMaster()
-                ? ResponseFactory.createUnauthorized()
-                : ResponseFactory.create(LiteratureUpdater::insertBook, book);
+                ? ResponseFactory.create(LiteratureUpdater::insertBook, book)
+                : ResponseFactory.createUnauthorized();
     }
 
     @DELETE
@@ -125,8 +125,8 @@ public class LiteratureRest {
             @QueryParam("id") int bookID
     ) {
         return type.isMaster()
-                ? ResponseFactory.createUnauthorized()
-                : ResponseFactory.create(LiteratureUpdater::deleteBook, bookID);
+                ? ResponseFactory.create(LiteratureUpdater::deleteBook, bookID)
+                : ResponseFactory.createUnauthorized();
     }
 
     private static class RestApplication extends Application {

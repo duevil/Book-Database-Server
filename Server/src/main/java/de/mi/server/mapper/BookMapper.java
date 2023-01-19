@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 
 class BookMapper implements Mapper<Book> {
-    private static final Book NULL_BOOK = new Book(0, null, null, null, -1, -1, -1,null);
+    private static final Book NULL_BOOK = new Book(0, null, null, null, -1, -1, -1, null);
 
     /**
      * Erzeugt eine neue Instanz aus den Werten,
