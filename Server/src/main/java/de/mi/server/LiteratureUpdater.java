@@ -3,8 +3,8 @@ package de.mi.server;
 import de.mi.common.Author;
 import de.mi.common.Book;
 import de.mi.common.Subfield;
-import de.mi.server.sql.SQLExecutor;
-import de.mi.server.sql.SQLExecutorFactory;
+import de.mi.server.sql.Executor;
+import de.mi.server.sql.ExecutorFactory;
 
 import java.sql.SQLException;
 
@@ -78,7 +78,7 @@ public final class LiteratureUpdater {
     }
 
     @SuppressWarnings({"java:S2972", "java:S1135"}) // TODO: remove suppression
-    enum Queries implements SQLExecutor<Integer> {
+    enum Queries implements Executor<Integer> {
         DELETE_AUTHORS("""
                 DELETE FROM authors
                 WHERE NOT EXISTS(SELECT * FROM book_authors WHERE author_id = id)"""),
@@ -110,10 +110,10 @@ public final class LiteratureUpdater {
                 SET first_name = ?, last_name = ?
                 WHERE id = ?""");
 
-        private final SQLExecutor<Integer> executor;
+        private final Executor<Integer> executor;
 
         Queries(String sql) {
-            executor = SQLExecutorFactory.createUpdater(DBConnection.prepareStatement(sql));
+            executor = ExecutorFactory.createUpdater(DBConnection.prepareStatement(sql));
         }
 
         @Override

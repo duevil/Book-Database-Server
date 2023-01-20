@@ -4,15 +4,15 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public abstract class SQLExecutorBase<T> implements SQLExecutor<T> {
+public abstract class ExecutorBase<T> implements Executor<T> {
     private final Statement statement;
     private final String sql;
 
-    protected SQLExecutorBase(PreparedStatement statement) {
+    protected ExecutorBase(PreparedStatement statement) {
         this(statement, null);
     }
 
-    protected SQLExecutorBase(Statement statement, String sql) {
+    protected ExecutorBase(Statement statement, String sql) {
         this.statement = statement;
         this.sql = sql;
     }

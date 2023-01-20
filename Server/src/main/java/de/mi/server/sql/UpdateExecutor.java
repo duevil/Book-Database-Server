@@ -3,9 +3,9 @@ package de.mi.server.sql;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-class SQLUpdateExecutor extends SQLExecutorBase<Integer> {
+class UpdateExecutor extends ExecutorBase<Integer> {
 
-    public SQLUpdateExecutor(PreparedStatement statement) {
+    public UpdateExecutor(PreparedStatement statement) {
         super(statement);
     }
 

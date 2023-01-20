@@ -1,4 +1,4 @@
-package de.mi.server.mapper;
+package de.mi.server.sql;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -11,6 +11,7 @@ import java.util.function.Function;
  * @author Malte Kasolowsky <code>m30114</code>
  * @see java.util.function.Function
  */
+@FunctionalInterface
 public interface Mapper<T> extends Function<Map<String, Object>, T> {
 
     /**

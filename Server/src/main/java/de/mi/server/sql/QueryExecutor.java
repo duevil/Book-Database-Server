@@ -1,7 +1,5 @@
 package de.mi.server.sql;
 
-import de.mi.server.mapper.Mapper;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,15 +10,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-class SQLQueryExecutor<T> extends SQLExecutorBase<List<T>> {
+class QueryExecutor<T> extends ExecutorBase<List<T>> {
     private final Mapper<T> mapper;
 
-    public SQLQueryExecutor(PreparedStatement statement, Mapper<T> mapper) {
+    public QueryExecutor(PreparedStatement statement, Mapper<T> mapper) {
         super(statement);
         this.mapper = mapper;
     }
 
-    public SQLQueryExecutor(Statement statement, String sql, Mapper<T> mapper) {
+    public QueryExecutor(Statement statement, String sql, Mapper<T> mapper) {
         super(statement, sql);
         this.mapper = mapper;
     }

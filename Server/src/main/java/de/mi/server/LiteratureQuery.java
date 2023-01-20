@@ -4,9 +4,9 @@ import de.mi.common.Author;
 import de.mi.common.Book;
 import de.mi.common.BookFilter;
 import de.mi.common.Subfield;
-import de.mi.server.mapper.LiteratureMapper;
-import de.mi.server.sql.SQLExecutor;
-import de.mi.server.sql.SQLExecutorFactory;
+import de.mi.server.sql.Executor;
+import de.mi.server.sql.ExecutorFactory;
+import de.mi.server.sql.Mapper;
 
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -16,8 +16,30 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public final class LiteratureQuery {
+    private static final Mapper<Book> BOOK_MAPPER = values -> Optional.ofNullable(values.get("id"))
+            .map(id -> new Book(
+                    (Integer) id,
+                    (String) values.get("title"),
+                    null,
+                    (String) values.get("publisher"),
+                    (Integer) values.get("year"),
+                    (Integer) values.get("pages"),
+                    (Integer) values.get("rating"),
+                    null))
+            .orElse(new Book(0, null, null, null, -1, -1, -1, null));
+    private static final Mapper<Author> AUTHOR_MAPPER = values -> Optional.ofNullable(values.get("id"))
+            .map(id -> new Author(
+                    (Integer) id,
+                    (String) values.get("first_name"),
+                    (String) values.get("last_name")))
+            .orElse(new Author(0, null, null));
+    private static final Mapper<Subfield> SUBFIELD_MAPPER = values -> Optional.ofNullable(values.get("id"))
+            .map(id -> new Subfield(
+                    (Integer) id,
+                    (String) values.get("name")))
+            .orElse(new Subfield(0, null));
     private static final BookFilter EMPTY_FILTER = BookFilter.builder().build();
-    private static final Set<Subfield> SUBFIELDS = new HashSet<>();
+    private static final Set<Subfield> SUBFIELDS;
     private static final String BOOK_SQL = """
             SELECT id, title, publisher, year, pages, rating
             FROM books
@@ -35,31 +57,31 @@ public final class LiteratureQuery {
                                   JOIN book_authors ba ON a.id = ba.author_id
                          WHERE ba.book_id = books.id
                            AND LOWER(CONCAT_WS(' ', a.first_name, a.last_name)) LIKE '%%%s%%')""";
-    private static final SQLExecutor<List<Author>> BOOK_AUTHOR_EXECUTOR
-            = SQLExecutorFactory.createQuery(DBConnection.prepareStatement("""
+    private static final Executor<List<Author>> BOOK_AUTHOR_EXECUTOR
+            = ExecutorFactory.createQuery(DBConnection.prepareStatement("""
             SELECT id, first_name, last_name
             FROM authors JOIN book_authors ON id = author_id
-            WHERE book_id = ?"""), LiteratureMapper.AUTHOR_MAPPER);
-    private static final SQLExecutor<List<Subfield>> BOOK_SUBFIELD_EXECUTOR
-            = SQLExecutorFactory.createQuery(DBConnection.prepareStatement("""
+            WHERE book_id = ?"""), AUTHOR_MAPPER);
+    private static final Executor<List<Subfield>> BOOK_SUBFIELD_EXECUTOR
+            = ExecutorFactory.createQuery(DBConnection.prepareStatement("""
             SELECT id, name
             FROM subfields JOIN book_subfields ON id = subfield_id
-            WHERE book_id = ?"""), LiteratureMapper.SUBFIELD_MAPPER);
-    private static final SQLExecutor<List<Author>> AUTHOR_EXECUTOR
-            = SQLExecutorFactory.createQuery(DBConnection.prepareStatement("""
+            WHERE book_id = ?"""), SUBFIELD_MAPPER);
+    private static final Executor<List<Author>> AUTHOR_EXECUTOR
+            = ExecutorFactory.createQuery(DBConnection.prepareStatement("""
             SELECT id, first_name, last_name
             FROM authors
-            WHERE first_name = ? AND last_name = ?"""), LiteratureMapper.AUTHOR_MAPPER);
-    private static final SQLExecutor<List<Book>> BOOK_EXECUTOR
-            = SQLExecutorFactory.createQuery(DBConnection.prepareStatement("""
+            WHERE first_name = ? AND last_name = ?"""), AUTHOR_MAPPER);
+    private static final Executor<List<Book>> BOOK_EXECUTOR
+            = ExecutorFactory.createQuery(DBConnection.prepareStatement("""
             SELECT id, title, publisher, year, pages
             FROM books
-            WHERE title = ?"""), LiteratureMapper.BOOK_MAPPER);
+            WHERE title = ?"""), BOOK_MAPPER);
 
     static {
         try (var stmt = DBConnection.createStatement()) {
-            var sql = "SELECT id, name FROM subfields";
-            SUBFIELDS.addAll(SQLExecutorFactory.createQuery(stmt, sql, LiteratureMapper.SUBFIELD_MAPPER).execute());
+            String sql = "SELECT id, name FROM subfields";
+            SUBFIELDS = Set.copyOf(ExecutorFactory.createQuery(stmt, sql, SUBFIELD_MAPPER).execute());
         } catch (SQLException e) {
             throw new ExceptionInInitializerError(e);
         }
@@ -69,7 +91,7 @@ public final class LiteratureQuery {
     }
 
     public static Set<Subfield> getSubfields() {
-        return Set.copyOf(SUBFIELDS);
+        return SUBFIELDS;
     }
 
     public static Set<Book> queryBooks() throws SQLException {
@@ -77,7 +99,6 @@ public final class LiteratureQuery {
     }
 
     public static Set<Book> queryBooks(BookFilter filter) throws SQLException {
-        final Set<Book> books = new HashSet<>();
         final String bookSQL = String.format(
                 BOOK_SQL,
                 Optional.ofNullable(filter.titleSearch()).orElse(""),
@@ -99,21 +120,22 @@ public final class LiteratureQuery {
         );
 
         try (var statement = DBConnection.createStatement()) {
-            for (Book b : SQLExecutorFactory.createQuery(statement, bookSQL, LiteratureMapper.BOOK_MAPPER).execute()) {
+            Set<Book> books = new HashSet<>();
+            List<Book> books0 = ExecutorFactory.createQuery(statement, bookSQL, BOOK_MAPPER).execute();
+            for (Book book : books0) {
                 books.add(new Book(
-                        b.id(),
-                        b.title(),
-                        BOOK_AUTHOR_EXECUTOR.execute(b.id()),
-                        b.publisher(),
-                        b.year(),
-                        b.pages(),
-                        b.rating(),
-                        Set.copyOf(BOOK_SUBFIELD_EXECUTOR.execute(b.id()))
+                        book.id(),
+                        book.title(),
+                        BOOK_AUTHOR_EXECUTOR.execute(book.id()),
+                        book.publisher(),
+                        book.year(),
+                        book.pages(),
+                        book.rating(),
+                        Set.copyOf(BOOK_SUBFIELD_EXECUTOR.execute(book.id()))
                 ));
             }
+            return Set.copyOf(books);
         }
-
-        return Set.copyOf(books);
     }
 
     static Author queryAuthorByName(String firstName, String lastName) throws SQLException {
