@@ -18,7 +18,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@SuppressWarnings("java:S109")
+@SuppressWarnings({"java:S109", "java:S1123", "java:S1133", "java:S1135"}) // TODO: remove suppression
+@Deprecated(since = "rating was added")
 public final class BookGenerator {
     private static final Random RND = new Random();
     private static final Scanner SCANNER = new Scanner(System.in, Charset.defaultCharset());

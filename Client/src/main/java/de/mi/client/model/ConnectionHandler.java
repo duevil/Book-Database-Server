@@ -23,9 +23,11 @@ final class ConnectionHandler {
     }
 
     private final Connection connection;
+    private final Supplier<Connection> supplier;
 
     ConnectionHandler(Supplier<Connection> connectionSupplier) {
         this.connection = connectionSupplier.get();
+        supplier = () -> connection;
     }
 
     private static <R, T> void run(Connection connection,
@@ -73,6 +75,7 @@ final class ConnectionHandler {
                               BiFunction<Connection, R, T> connectionFunction,
                               Consumer<T> resultConsumer,
                               Runnable onFailAction) {
+        supplier.get();
         run(connection, functionParameter, connectionFunction, resultConsumer, onFailAction);
     }
 

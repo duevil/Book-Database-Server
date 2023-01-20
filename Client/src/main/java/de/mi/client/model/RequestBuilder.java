@@ -8,7 +8,6 @@ import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 import java.util.Optional;
 
@@ -51,11 +50,12 @@ class RequestBuilder {
         var builder = target.request()
                 .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, clientType);
-        Response response = Optional.ofNullable(entity)
+
+        var response = Optional.ofNullable(entity)
                 .map(Entity::json)
-                .map(tEntity -> switch (method) {
-                    case HttpMethod.PUT -> builder.put(tEntity);
-                    case HttpMethod.POST -> builder.post(tEntity);
+                .map(jsonEntity -> switch (method) {
+                    case HttpMethod.PUT -> builder.put(jsonEntity);
+                    case HttpMethod.POST -> builder.post(jsonEntity);
                     default -> throw new IllegalArgumentException("illegal method");
                 })
                 .orElseGet(() -> switch (method) {
@@ -63,6 +63,7 @@ class RequestBuilder {
                     case HttpMethod.DELETE -> builder.delete();
                     default -> throw new IllegalArgumentException("illegal method");
                 });
+
         return new RequestResult(response);
     }
 }

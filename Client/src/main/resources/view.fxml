@@ -8,9 +8,9 @@
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17.0.2-ea"
             fx:controller="de.mi.client.controller.Controller">
-    <HBox alignment="CENTER" prefHeight="600.0" prefWidth="1000.0" AnchorPane.bottomAnchor="0.0"
+    <HBox alignment="CENTER" prefHeight="600.0" prefWidth="1100.0" AnchorPane.bottomAnchor="0.0"
           AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <VBox maxWidth="400.0" minWidth="-Infinity" prefWidth="262.0" spacing="5.0" HBox.hgrow="ALWAYS">
+        <VBox spacing="5.0" HBox.hgrow="SOMETIMES" fx:id="filterMainPane">
             <padding>
                 <Insets bottom="15.0" left="15.0" right="15.0" top="15.0"/>
             </padding>
@@ -143,7 +143,7 @@
                 </Button>
             </HBox>
         </VBox>
-        <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+        <VBox spacing="5.0" HBox.hgrow="SOMETIMES" fx:id="previewMainPane">
             <padding>
                 <Insets bottom="15.0" left="15.0" right="15.0" top="15.0"/>
             </padding>
@@ -155,7 +155,7 @@
             <Separator prefWidth="200.0"/>
             <ListView fx:id="bookView" VBox.vgrow="ALWAYS"/>
         </VBox>
-        <VBox maxWidth="400.0" minWidth="-Infinity" prefWidth="262.0" spacing="5.0" HBox.hgrow="ALWAYS">
+        <VBox spacing="5.0" HBox.hgrow="SOMETIMES" fx:id="selectionMainPain">
             <padding>
                 <Insets bottom="15.0" left="15.0" right="15.0" top="15.0"/>
             </padding>

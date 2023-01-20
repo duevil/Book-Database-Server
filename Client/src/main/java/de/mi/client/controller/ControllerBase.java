@@ -1,6 +1,7 @@
 package de.mi.client.controller;
 
 import de.mi.client.model.Model;
+import de.mi.common.Book;
 import de.mi.common.BookFilter;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleObjectProperty;
@@ -16,21 +17,22 @@ abstract class ControllerBase {
     protected final FilterProperties filterProperties = new FilterProperties();
     protected final Model model = new Model();
     private final SimpleObjectProperty<State> state = new SimpleObjectProperty<>(State.NONE);
+    protected final SimpleObjectProperty<Book> selectedBook = new SimpleObjectProperty<>();
     protected final BooleanBinding isUpdating = state.isEqualTo(State.UPDATING);
     protected final BooleanBinding isCreating = state.isEqualTo(State.CREATING);
-    protected final BooleanBinding editable = isUpdating.or(isCreating);
+    protected final BooleanBinding isSelectionEditable = isUpdating.or(isCreating);
 
     protected ControllerBase() {
         isCreating.addListener((observable, oldValue, newValue) -> {
-            if (Boolean.TRUE.equals(newValue)) model.selectedBook().set(null);
+            if (Boolean.TRUE.equals(newValue)) selectedBook.set(null);
         });
-        model.selectedBook().addListener((observable, oldValue, newValue) -> {
+        selectedBook.addListener((observable, oldValue, newValue) -> {
             if (newValue != null) selectedBookProperties.set(newValue);
             else selectedBookProperties.clear();
         });
         model.setOnFailAction(() -> {
             state.set(State.NONE);
-            model.selectedBook().set(null);
+            selectedBook.set(null);
         });
     }
 
@@ -77,7 +79,7 @@ abstract class ControllerBase {
                 alert.showAndWait().ifPresent((ButtonType type) -> {
                     if (type.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
                         state.set(State.NONE);
-                        model.selectedBook().set(null);
+                        selectedBook.set(null);
                     }
                 });
             }
@@ -126,6 +128,7 @@ abstract class ControllerBase {
                     .map(t -> t.isDefaultButton() ? selectedBookProperties.get() : null)
                     .ifPresent(model::deleteBook);
             state.set(State.NONE);
+            selectedBook.set(null);
             loadBooks(false);
         } else alertCantPerformAction(State.DELETING.toString());
     }
@@ -158,7 +161,7 @@ abstract class ControllerBase {
     protected final void loadBooks(boolean filter) {
         if (filter) {
             if (state.get() == State.NONE) {
-                model.selectedBook().set(null);
+                selectedBook.set(null);
                 getFilter().ifPresent(model::loadBooks);
             } else alertCantPerformAction("applying filter");
         } else {

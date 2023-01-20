@@ -1,6 +1,5 @@
 package de.mi.other;
 
-import com.github.javafaker.Faker;
 import de.mi.common.Subfield;
 import de.mi.server.LiteratureQuery;
 import de.mi.server.sql.SQLExceptionHandler;
@@ -107,8 +106,7 @@ public class BookReader {
                         "publisher", quoteIfy(book.publisher()),
                         "year", String.valueOf(book.year()),
                         "pages", String.valueOf(book.pages()),
-                        //"rating", String.valueOf(book.rating())
-                        "rating", Faker.instance().regexify("[1-5]")
+                        "rating", String.valueOf(book.rating())
                 );
                 file.println(insert("books", bookValues));
 

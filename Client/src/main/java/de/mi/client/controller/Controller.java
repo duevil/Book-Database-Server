@@ -6,7 +6,6 @@ import javafx.beans.binding.When;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
-import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -16,6 +15,7 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 
 @SuppressWarnings({"java:S109", "java:S1820", "java:S3242", "java:S2211", "java:S1135"}) // TODO: remove suppression
 public final class Controller extends ControllerBase {
@@ -63,17 +63,23 @@ public final class Controller extends ControllerBase {
     public Button createButton;
     @FXML
     public ListView<Book> bookView;
+    @FXML
+    public VBox filterMainPane;
+    @FXML
+    public VBox previewMainPane;
+    @FXML
+    public VBox selectionMainPain;
 
     @FXML
-    public void applyFilter(ActionEvent actionEvent) {
+    public void applyFilter() {
         loadBooks(true);
     }
 
     @FXML
-    public void clearFilter(ActionEvent actionEvent) {
+    public void clearFilter() {
         selectedBookProperties.clear();
         filterProperties.clear();
-        applyFilter(actionEvent);
+        applyFilter();
     }
 
     @FXML
@@ -88,11 +94,18 @@ public final class Controller extends ControllerBase {
     @FXML
     @Override
     public void initialize() {
+        initialiseMainPanes();
         initialiseSelection();
         initialiseFilter();
         initialiseButtons();
         initializeBookView();
         loadBooks(false);
+    }
+
+    private void initialiseMainPanes() {
+        filterMainPane.prefWidthProperty().bind(previewMainPane.widthProperty());
+        selectionMainPain.prefWidthProperty().bind(previewMainPane.widthProperty());
+        previewMainPane.prefWidthProperty().bind(previewMainPane.widthProperty().multiply(1.5));
     }
 
     private void initialiseSelection() {
@@ -101,14 +114,14 @@ public final class Controller extends ControllerBase {
                 selectionAuthorPane,
                 selectionAuthors,
                 "Selected book's authors",
-                selectionAuthors.authorProperties().emptyProperty().not().or(editable));
+                selectionAuthors.authorProperties().emptyProperty().not().or(isSelectionEditable));
 
         var selectionSubfields = new SubfieldPane(model.getSubfields());
         Util.bindScrollPaneContentOrLabel(
                 selectionSubfieldsPane,
                 selectionSubfields,
                 "Selected book's subfields",
-                selectionSubfields.subfieldsProperty().emptyProperty().not().or(editable));
+                selectionSubfields.subfieldsProperty().emptyProperty().not().or(isSelectionEditable));
 
         var selectionRating = new RatingPane();
         selectionRatingPane.getChildren().add(selectionRating);
@@ -124,16 +137,16 @@ public final class Controller extends ControllerBase {
         Util.addFormatter(selectionYear);
         Util.addFormatter(selectionPages);
 
-        selectionTitle.editableProperty().bind(editable);
-        selectionAuthors.editableProperty().bind(editable);
-        selectionPublisher.editableProperty().bind(editable);
-        selectionYear.editableProperty().bind(editable);
-        selectionPages.editableProperty().bind(editable);
-        selectionRating.editableProperty().bind(editable);
-        selectionSubfields.editableProperty().bind(editable);
+        selectionTitle.editableProperty().bind(isSelectionEditable);
+        selectionAuthors.editableProperty().bind(isSelectionEditable);
+        selectionPublisher.editableProperty().bind(isSelectionEditable);
+        selectionYear.editableProperty().bind(isSelectionEditable);
+        selectionPages.editableProperty().bind(isSelectionEditable);
+        selectionRating.editableProperty().bind(isSelectionEditable);
+        selectionSubfields.editableProperty().bind(isSelectionEditable);
 
-        selectionSubfieldsPane.prefHeightProperty().bind(selectionAuthorPane.widthProperty());
-        selectionAuthorPane.prefHeightProperty().bind(selectionSubfieldsPane.widthProperty());
+        selectionSubfieldsPane.prefHeightProperty().bind(selectionAuthorPane.heightProperty());
+        selectionAuthorPane.prefHeightProperty().bind(selectionSubfieldsPane.heightProperty());
     }
 
     private void initialiseFilter() {
@@ -166,17 +179,17 @@ public final class Controller extends ControllerBase {
         Util.addFormatter(minPages);
         Util.addFormatter(maxPages);
 
-        titleSearch.setOnAction(this::applyFilter);
-        authorSearch.setOnAction(this::applyFilter);
-        minYear.setOnAction(this::applyFilter);
-        maxYear.setOnAction(this::applyFilter);
-        minPages.setOnAction(this::applyFilter);
-        maxPages.setOnAction(this::applyFilter);
+        titleSearch.setOnAction(event -> applyFilter());
+        authorSearch.setOnAction(event -> applyFilter());
+        minYear.setOnAction(event -> applyFilter());
+        maxYear.setOnAction(event -> applyFilter());
+        minPages.setOnAction(event -> applyFilter());
+        maxPages.setOnAction(event -> applyFilter());
         minRatingSlider.valueChangingProperty().addListener((observable, oldValue, newValue) -> {
-            if (Boolean.FALSE.equals(newValue)) this.applyFilter(null);
+            if (Boolean.FALSE.equals(newValue)) this.applyFilter();
         });
         maxRatingSlider.valueChangingProperty().addListener((observable, oldValue, newValue) -> {
-            if (Boolean.FALSE.equals(newValue)) this.applyFilter(null);
+            if (Boolean.FALSE.equals(newValue)) this.applyFilter();
         });
 
         minRating.textProperty().bind(filterProperties.minRatingProperty().asString());
@@ -190,15 +203,14 @@ public final class Controller extends ControllerBase {
 
     private void initializeBookView() {
         bookView.itemsProperty().bind(model.getLoadedBooks());
-        bookView.disableProperty().bind(editable);
+        bookView.disableProperty().bind(isSelectionEditable);
         bookView.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(Book book, boolean empty) {
                 super.updateItem(book, empty);
                 if (empty || book == null) setText(null);
                 else {
-                    prefWidthProperty().bind(param.widthProperty().subtract(12));
-                    cursorProperty().bind(new When(editable).then(Cursor.MOVE).otherwise(Cursor.HAND));
+                    prefWidthProperty().bind(param.widthProperty().subtract(15));
                     setPadding(new Insets(5));
                     setWrapText(true);
                     setText(book.title());
@@ -207,10 +219,9 @@ public final class Controller extends ControllerBase {
         });
         final var sm = bookView.getSelectionModel();
         sm.selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            if (editable.get()) return;
-            if (newValue != null) model.selectedBook().set(newValue);
+            if (!isSelectionEditable.get() && newValue != null) selectedBook.set(newValue);
         });
-        model.selectedBook().addListener((observable, oldValue, newValue) -> {
+        selectedBook.addListener((observable, oldValue, newValue) -> {
             sm.clearSelection();
             sm.select(newValue);
         });

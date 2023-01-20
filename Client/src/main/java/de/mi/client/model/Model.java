@@ -17,7 +17,6 @@ import java.util.Set;
 
 public class Model {
     private final SimpleObjectProperty<String> programmName = new SimpleObjectProperty<>();
-    private final SimpleObjectProperty<Book> selectedBook = new SimpleObjectProperty<>();
     private final SimpleListProperty<Book> loadedBooks = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ConnectionHandler handler = new ConnectionHandler(Model::createConnection);
     private final Set<Subfield> subfields = new HashSet<>();
@@ -52,10 +51,6 @@ public class Model {
 
     public SimpleObjectProperty<String> getProgrammName() {
         return programmName;
-    }
-
-    public SimpleObjectProperty<Book> selectedBook() {
-        return selectedBook;
     }
 
     public SimpleListProperty<Book> getLoadedBooks() {
