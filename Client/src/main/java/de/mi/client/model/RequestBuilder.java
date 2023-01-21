@@ -38,8 +38,8 @@ class RequestBuilder {
         createRequest(HttpMethod.PUT, entity);
     }
 
-    public <T> void requestPOST(T entity) throws IllegalArgumentException {
-        createRequest(HttpMethod.POST, entity);
+    public <T> RequestResult requestPOST(T entity) throws IllegalArgumentException {
+        return createRequest(HttpMethod.POST, entity);
     }
 
     public void requestDELETE() throws IllegalArgumentException {

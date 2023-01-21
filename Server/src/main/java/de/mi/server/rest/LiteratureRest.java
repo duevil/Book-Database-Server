@@ -15,14 +15,13 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Application;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Path("/")
 public class LiteratureRest {
@@ -30,77 +29,39 @@ public class LiteratureRest {
     public static final Class<? extends Application> APPLICATION = RestApplication.class;
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
     public Response getName() {
         return ResponseFactory.create(() -> "Informatik Fachliteratur");
     }
 
     @GET
     @Path("subfields")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
     public Response getSubfields() {
         return ResponseFactory.create(LiteratureQuery::getSubfields);
     }
 
     @GET
     @Path("books")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllBooks() {
-        return getBooks(null);
+    @Produces(APPLICATION_JSON)
+    public Response queryBooks() {
+        return queryBooks(null);
     }
 
     @POST
     @Path("books")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response getBooks(BookFilter filter) {
+    @Produces(APPLICATION_JSON)
+    @Consumes(APPLICATION_JSON)
+    public Response queryBooks(BookFilter filter) {
         return filter == null
                 ? ResponseFactory.create(LiteratureQuery::queryBooks)
                 : ResponseFactory.<Set<Book>, BookFilter>create(LiteratureQuery::queryBooks, filter);
     }
 
-    @GET
-    @Path("books/filter")
-    @Produces(MediaType.APPLICATION_JSON)
-    @SuppressWarnings({"java:S107", "java:S1135"}) // TODO: remove suppression
-    public Response getBooks(
-            @QueryParam("title") String titleSearch,
-            @QueryParam("author") String authorSearch,
-            @QueryParam("min_year") Integer minYear,
-            @QueryParam("max_year") Integer maxYear,
-            @QueryParam("min_pages") Integer minPages,
-            @QueryParam("max_pages") Integer maxPages,
-            @QueryParam("min_rating") Integer minRating,
-            @QueryParam("max_rating") Integer maxRating,
-            @QueryParam("subfield") Set<Integer> subfieldIDs
-    ) {
-        BookFilter filter = BookFilter.builder()
-                .searchTitle(titleSearch)
-                .searchAuthor(authorSearch)
-                .yearRange(
-                        Optional.ofNullable(minYear).orElse(Book.DEFAULT_YEAR_RANGE.min()),
-                        Optional.ofNullable(maxYear).orElse(Book.DEFAULT_YEAR_RANGE.max()))
-                .pageRange(
-                        Optional.ofNullable(minPages).orElse(Book.DEFAULT_PAGE_RANGE.min()),
-                        Optional.ofNullable(maxPages).orElse(Book.DEFAULT_PAGE_RANGE.max()))
-                .ratingRange(
-                        Optional.ofNullable(minRating).orElse(Book.DEFAULT_RATING_RANGE.min()),
-                        Optional.ofNullable(maxRating).orElse(Book.DEFAULT_RATING_RANGE.max()))
-                .subfields(LiteratureQuery.getSubfields()
-                        .stream()
-                        .filter(s -> Optional.ofNullable(subfieldIDs).orElse(Set.of()).contains(s.id()))
-                        .collect(Collectors.toSet()))
-                .build();
-        return getBooks(filter);
-    }
-
     @PUT
     @Path("update")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateBook(
-            @HeaderParam(HttpHeaders.AUTHORIZATION) ClientType type,
-            Book book
-    ) {
+    @Consumes(APPLICATION_JSON)
+    public Response updateBook(@HeaderParam(AUTHORIZATION) ClientType type, Book book) {
         return type.isMaster()
                 ? ResponseFactory.create(LiteratureUpdater::updateBook, book)
                 : ResponseFactory.createUnauthorized();
@@ -108,11 +69,8 @@ public class LiteratureRest {
 
     @POST
     @Path("create")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response createBook(
-            @HeaderParam(HttpHeaders.AUTHORIZATION) ClientType type,
-            Book book
-    ) {
+    @Consumes(APPLICATION_JSON)
+    public Response createBook(@HeaderParam(AUTHORIZATION) ClientType type, Book book) {
         return type.isMaster()
                 ? ResponseFactory.create(LiteratureUpdater::insertBook, book)
                 : ResponseFactory.createUnauthorized();
@@ -120,12 +78,9 @@ public class LiteratureRest {
 
     @DELETE
     @Path("delete")
-    public Response deleteBook(
-            @HeaderParam(HttpHeaders.AUTHORIZATION) ClientType type,
-            @QueryParam("id") int bookID
-    ) {
+    public Response deleteBook(@HeaderParam(AUTHORIZATION) ClientType type, @QueryParam("id") int id) {
         return type.isMaster()
-                ? ResponseFactory.create(LiteratureUpdater::deleteBook, bookID)
+                ? ResponseFactory.create(LiteratureUpdater::deleteBook, id)
                 : ResponseFactory.createUnauthorized();
     }
 

@@ -18,7 +18,7 @@ public final class LiteratureUpdater {
         if (old.isEmpty())
             throw new IllegalArgumentException("book does not exist and thus can not be updated");
 
-        var values = new Object[]{book.title(), book.publisher(), book.year(), book.pages(), book.rating(), book.id()};
+        var values = new Object[] {book.title(), book.publisher(), book.year(), book.pages(), book.rating(), book.id()};
         Queries.UPDATE_BOOK.execute(values);
 
         for (Author author : book.authors()) {
@@ -34,21 +34,18 @@ public final class LiteratureUpdater {
         }
 
         for (Author author : old.get().authors()) {
-            if (!book.authors().contains(author)) {
-                Queries.DELETE_BOOK_AUTHOR.execute(book.id(), author.id());
-            }
+            if (!book.authors().contains(author)) Queries.DELETE_BOOK_AUTHOR.execute(book.id(), author.id());
         }
 
         for (Subfield subfield : old.get().subfields()) {
-            if (!book.subfields().contains(subfield))
-                Queries.DELETE_BOOK_SUBFIELD.execute(book.id(), subfield.id());
+            if (!book.subfields().contains(subfield)) Queries.DELETE_BOOK_SUBFIELD.execute(book.id(), subfield.id());
         }
     }
 
-    public static void deleteBook(int bookID) throws SQLException {
-        Queries.DELETE_BOOK.execute(bookID);
-        Queries.DELETE_BOOK_AUTHORS_ALL.execute(bookID);
-        Queries.DELETE_BOOK_SUBFIELDS_ALL.execute(bookID);
+    public static void deleteBook(int id) throws SQLException {
+        Queries.DELETE_BOOK.execute(id);
+        Queries.DELETE_BOOK_AUTHORS_ALL.execute(id);
+        Queries.DELETE_BOOK_SUBFIELDS_ALL.execute(id);
         Queries.DELETE_AUTHORS.execute();
     }
 
@@ -56,7 +53,7 @@ public final class LiteratureUpdater {
         if (book.id() != 0 || LiteratureQuery.queryBooks().contains(book))
             throw new IllegalArgumentException("book does already exist and thus can not be inserted");
 
-        var values = new Object[]{book.title(), book.publisher(), book.year(), book.pages(), book.rating()};
+        var values = new Object[] {book.title(), book.publisher(), book.year(), book.pages(), book.rating()};
         Queries.INSERT_BOOK.execute(values);
         Book inserted = LiteratureQuery.queryBookByTitle(book.title());
 

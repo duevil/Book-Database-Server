@@ -29,8 +29,7 @@ class Connection {
     }
 
     public Set<Subfield> getSubfields() throws WebApplicationException {
-        return createBuilder().path("subfields").requestGET().read(new GenericType<>() {
-        });
+        return createBuilder().path("subfields").requestGET().read(new GenericType<>() {});
     }
 
     public List<Book> getBooks() throws WebApplicationException {
@@ -38,21 +37,9 @@ class Connection {
     }
 
     public List<Book> getBooks(BookFilter filter) throws WebApplicationException {
-        final var bookBuilder = createBuilder().path("books");
-        if (filter != null) {
-            bookBuilder.path("filter")
-                    .queryParam("title", filter.titleSearch())
-                    .queryParam("author", filter.authorSearch())
-                    .queryParam("min_year", filter.yearRange().min())
-                    .queryParam("max_year", filter.yearRange().max())
-                    .queryParam("min_pages", filter.pageRange().min())
-                    .queryParam("max_pages", filter.pageRange().max())
-                    .queryParam("min_rating", filter.ratingRange().min())
-                    .queryParam("max_rating", filter.ratingRange().max())
-                    .queryParam("subfield", filter.subfields().stream().map(Subfield::id).toArray());
-        }
-        return bookBuilder.requestGET().read(new GenericType<>() {
-        });
+        var builder = createBuilder().path("books");
+        var result = filter == null ? builder.requestGET() : builder.requestPOST(filter);
+        return result.read(new GenericType<>() {});
     }
 
     public void updateBook(Book book) throws WebApplicationException {
