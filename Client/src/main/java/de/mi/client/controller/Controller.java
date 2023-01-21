@@ -71,15 +71,15 @@ public final class Controller extends ControllerBase {
     public VBox selectionMainPain;
 
     @FXML
-    public void applyFilter() {
-        loadBooks(true);
-    }
-
-    @FXML
     public void clearFilter() {
         selectedBookProperties.clear();
         filterProperties.clear();
         applyFilter();
+    }
+
+    @FXML
+    public void applyFilter() {
+        loadBooks(true);
     }
 
     @FXML
@@ -210,7 +210,7 @@ public final class Controller extends ControllerBase {
                 super.updateItem(book, empty);
                 if (empty || book == null) setText(null);
                 else {
-                    prefWidthProperty().bind(param.widthProperty().subtract(15));
+                    prefWidthProperty().bind(param.widthProperty().subtract(20));
                     setPadding(new Insets(5));
                     setWrapText(true);
                     setText(book.title());

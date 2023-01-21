@@ -31,7 +31,7 @@ class ScriptRunner extends ExecutorBase<Void> {
      * @param path       Der Path zur auszuführenden Script-Datei
      * @throws IOException Wenn beim Öffnen der Datei in I/O-Fehler auftritt
      * @deprecated Klasse wurde als Implementierung von {@link ExecutorBase} ge-refactored;
-     * die Funktionalität dieser Methode wurde in {@link ScriptRunner#execute(Object...)} ()} übernommen
+     * die Funktionalität dieser Methode wurde in {@link ScriptRunner#execute(Object...)} übernommen
      */
     @Deprecated(since = "0.2.7")
     public static void runFile(Connection connection, Path path) throws IOException {

@@ -16,8 +16,8 @@ abstract class ControllerBase {
     protected final BookProperties selectedBookProperties = new BookProperties();
     protected final FilterProperties filterProperties = new FilterProperties();
     protected final Model model = new Model();
-    private final SimpleObjectProperty<State> state = new SimpleObjectProperty<>(State.NONE);
     protected final SimpleObjectProperty<Book> selectedBook = new SimpleObjectProperty<>();
+    private final SimpleObjectProperty<State> state = new SimpleObjectProperty<>(State.NONE);
     protected final BooleanBinding isUpdating = state.isEqualTo(State.UPDATING);
     protected final BooleanBinding isCreating = state.isEqualTo(State.CREATING);
     protected final BooleanBinding isSelectionEditable = isUpdating.or(isCreating);

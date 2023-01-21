@@ -24,6 +24,10 @@ class Connection {
         return String.format("%s [%s]", createBuilder().requestGET().read(String.class), clientType);
     }
 
+    private RequestBuilder createBuilder() {
+        return new RequestBuilder(client, clientType);
+    }
+
     public Set<Subfield> getSubfields() throws WebApplicationException {
         return createBuilder().path("subfields").requestGET().read(new GenericType<>() {
         });
@@ -61,9 +65,5 @@ class Connection {
 
     public void deleteBook(Book book) throws WebApplicationException {
         createBuilder().path("delete").queryParam("id", book.id()).requestDELETE();
-    }
-
-    private RequestBuilder createBuilder() {
-        return new RequestBuilder(client, clientType);
     }
 }

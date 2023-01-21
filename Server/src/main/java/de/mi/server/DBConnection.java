@@ -1,7 +1,7 @@
 package de.mi.server;
 
-import de.mi.server.sql.SQLExceptionHandler;
 import de.mi.server.sql.ExecutorFactory;
+import de.mi.server.sql.SQLExceptionHandler;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -63,21 +63,21 @@ public final class DBConnection {
         }
     }
 
-    public static PreparedStatement prepareStatement(String sql) {
-        try {
-            return Singleton.INSTANCE.dbCon.connection.prepareStatement(sql);
-        } catch (SQLException e) {
-            SQLExceptionHandler.handle(e, sql, LOGGER);
-            throw new NoSuchElementException("no prepared statement was created", e);
-        }
-    }
-
     public static Statement createStatement() {
         try {
             return Singleton.INSTANCE.dbCon.connection.createStatement();
         } catch (SQLException e) {
             SQLExceptionHandler.handle(e, LOGGER);
             throw new NoSuchElementException("no statement was created", e);
+        }
+    }
+
+    public static PreparedStatement prepareStatement(String sql) {
+        try {
+            return Singleton.INSTANCE.dbCon.connection.prepareStatement(sql);
+        } catch (SQLException e) {
+            SQLExceptionHandler.handle(e, sql, LOGGER);
+            throw new NoSuchElementException("no prepared statement was created", e);
         }
     }
 

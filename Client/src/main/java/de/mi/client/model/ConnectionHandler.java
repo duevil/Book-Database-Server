@@ -2,6 +2,7 @@ package de.mi.client.model;
 
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 
@@ -62,6 +63,10 @@ final class ConnectionHandler {
                 });
                 alert.setHeaderText("Error: " + e.getMessage());
                 Optional.ofNullable(e.getCause()).map(Throwable::getMessage).ifPresent(alert::setContentText);
+                if (e.getResponse().getStatusInfo().getFamily() == Response.Status.Family.SERVER_ERROR) {
+                    String text = alert.getContentText();
+                    alert.setContentText(text + "\n\nPlease contact customer support");
+                }
                 alert.showAndWait();
             });
         } catch (RuntimeException e) {
@@ -71,18 +76,18 @@ final class ConnectionHandler {
         LOGGER.log(Level.WARNING, "Connection request failed", ex);
     }
 
+    public <T> void handle(Function<Connection, T> connectionFunction,
+                           Consumer<T> resultConsumer,
+                           Runnable onFailAction) {
+        handle(null, (c, param) -> connectionFunction.apply(c), resultConsumer, onFailAction);
+    }
+
     public <R, T> void handle(R functionParameter,
                               BiFunction<Connection, R, T> connectionFunction,
                               Consumer<T> resultConsumer,
                               Runnable onFailAction) {
         supplier.get();
         run(connection, functionParameter, connectionFunction, resultConsumer, onFailAction);
-    }
-
-    public <T> void handle(Function<Connection, T> connectionFunction,
-                           Consumer<T> resultConsumer,
-                           Runnable onFailAction) {
-        handle(null, (c, param) -> connectionFunction.apply(c), resultConsumer, onFailAction);
     }
 
     public <R> void handle(R parameter,
