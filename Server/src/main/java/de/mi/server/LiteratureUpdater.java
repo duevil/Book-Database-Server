@@ -16,7 +16,7 @@ public final class LiteratureUpdater {
     public static void updateBook(Book book) throws SQLException, IllegalArgumentException {
         var old = LiteratureQuery.queryBooks().stream().filter(b -> b.equals(book)).findFirst();
         if (old.isEmpty())
-            throw new IllegalArgumentException("book does not exist and thus can not be updated");
+            throw new IllegalArgumentException("Book does not exist and thus can not be updated");
 
         var values = new Object[] {book.title(), book.publisher(), book.year(), book.pages(), book.rating(), book.id()};
         Queries.UPDATE_BOOK.execute(values);
@@ -36,6 +36,7 @@ public final class LiteratureUpdater {
         for (Author author : old.get().authors()) {
             if (!book.authors().contains(author)) Queries.DELETE_BOOK_AUTHOR.execute(book.id(), author.id());
         }
+        Queries.DELETE_AUTHORS.execute();
 
         for (Subfield subfield : old.get().subfields()) {
             if (!book.subfields().contains(subfield)) Queries.DELETE_BOOK_SUBFIELD.execute(book.id(), subfield.id());
@@ -51,7 +52,7 @@ public final class LiteratureUpdater {
 
     public static void insertBook(Book book) throws SQLException, IllegalArgumentException {
         if (book.id() != 0 || LiteratureQuery.queryBooks().contains(book))
-            throw new IllegalArgumentException("book does already exist and thus can not be inserted");
+            throw new IllegalArgumentException("Book does already exist and thus can not be inserted");
 
         var values = new Object[] {book.title(), book.publisher(), book.year(), book.pages(), book.rating()};
         Queries.INSERT_BOOK.execute(values);
@@ -70,12 +71,12 @@ public final class LiteratureUpdater {
     private static void insertAuthor(Book book, Author author) throws SQLException {
         Queries.INSERT_AUTHOR.execute(author.firstName(), author.lastName());
         Author inserted = LiteratureQuery.queryAuthorByName(author.firstName(), author.lastName());
-        if (inserted == null) throw new IllegalStateException("unable to find inserted author: " + author);
+        if (inserted == null) throw new IllegalStateException("Unable to find inserted author: " + author);
         Queries.INSERT_BOOK_AUTHORS.execute(book.id(), inserted.id());
     }
 
     @SuppressWarnings({"java:S2972", "java:S1135"}) // TODO: remove suppression
-    enum Queries implements Executor<Integer> {
+    private enum Queries implements Executor<Integer> {
         DELETE_AUTHORS("""
                 DELETE FROM authors
                 WHERE NOT EXISTS(SELECT * FROM book_authors WHERE author_id = id)"""),

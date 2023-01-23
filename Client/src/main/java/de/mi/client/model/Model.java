@@ -40,11 +40,6 @@ public class Model {
         });
     }
 
-    private void setBooks(List<Book> books) {
-        loadedBooks.clear();
-        loadedBooks.setAll(books);
-    }
-
     public Set<Subfield> getSubfields() {
         return Collections.unmodifiableSet(subfields);
     }
@@ -79,5 +74,10 @@ public class Model {
 
     public void setOnFailAction(Runnable onFailAction) {
         this.onFailAction = onFailAction;
+    }
+
+    private void setBooks(List<Book> books) {
+        loadedBooks.clear();
+        loadedBooks.setAll(books);
     }
 }

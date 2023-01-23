@@ -21,7 +21,7 @@ import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 
 final class Util {
-    private static final Pattern REGEX = Pattern.compile("^\\d*$");
+    private static final Pattern REGEX = Pattern.compile("^\\d{0,5}$");
     private static final UnaryOperator<TextFormatter.Change> FILTER
             = c -> REGEX.matcher(c.getControlNewText()).matches() ? c : null;
     private static final Color COLOR = Color.GRAY.interpolate(Color.LIGHTGRAY, 0.75);
@@ -51,7 +51,7 @@ final class Util {
 
     public static Integer readProperty(ReadOnlyProperty<Integer> property, Range range)
             throws PropertyException {
-        return readPropertyOptional(property, range).getRanged().orElse(null);
+        return readPropertyOptional(property, range).get();
     }
 
     public static RangedOptional readPropertyOptional(ReadOnlyProperty<Integer> property, Range range)
@@ -87,26 +87,6 @@ final class Util {
         }
     }
 
-    private static class ReadResult<T> {
-        private final ReadOnlyProperty<T> property;
-
-        protected ReadResult(ReadOnlyProperty<T> property) {
-            this.property = property;
-        }
-
-        private T get() {
-            return getOptional().filter(this::testString).orElseThrow(emptyPropertyExceptionSupplier(property));
-        }
-
-        private Optional<T> getOptional() {
-            return Optional.ofNullable(property.getValue());
-        }
-
-        private boolean testString(T t) {
-            return !(t instanceof String s && s.trim().isEmpty());
-        }
-    }
-
     public static final class RangedOptional extends ReadResult<Integer> {
         private final Range range;
 
@@ -115,20 +95,43 @@ final class Util {
             this.range = range;
         }
 
-        private Optional<Integer> getRanged() {
+        public Integer orMin() {
+            return getOptional().orElse(range.min());
+        }
+
+        public Integer orMax() {
+            return getOptional().orElse(range.max());
+        }
+
+        @Override
+        protected Optional<Integer> getOptional() {
             try {
                 return super.getOptional().map(range::checkRange);
             } catch (Range.OutOfRangeException e) {
                 throw new PropertyException(super.property, e);
             }
         }
+    }
 
-        public Integer orMin() {
-            return getRanged().orElse(range.min());
+    private static class ReadResult<T> {
+        private final ReadOnlyProperty<T> property;
+
+        protected ReadResult(ReadOnlyProperty<T> property) {
+            this.property = property;
         }
 
-        public Integer orMax() {
-            return getRanged().orElse(range.max());
+        protected T get() {
+            return getOptional().map(this::testString).orElseThrow(emptyPropertyExceptionSupplier(property));
+        }
+
+        protected Optional<T> getOptional() {
+            return Optional.ofNullable(property.getValue());
+        }
+
+        @SuppressWarnings("unchecked")
+        private T testString(T t) {
+            if (t instanceof String s) return s.isBlank() ? null : (T) s.trim();
+            else return t;
         }
     }
 }

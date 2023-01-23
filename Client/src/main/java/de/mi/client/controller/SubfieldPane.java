@@ -71,20 +71,20 @@ class SubfieldPane extends VBox {
         });
     }
 
-    private Stream<SubfieldField> fieldsForSubfield(Subfield search) {
-        return super.getChildren()
-                .stream()
-                .filter(SubfieldField.class::isInstance)
-                .map(SubfieldField.class::cast)
-                .filter(s -> s.subfieldProperty.get().equals(search));
-    }
-
     public SetProperty<Subfield> subfieldsProperty() {
         return subfieldsProperty;
     }
 
     public BooleanProperty editableProperty() {
         return editableProperty;
+    }
+
+    private Stream<SubfieldField> fieldsForSubfield(Subfield search) {
+        return super.getChildren()
+                .stream()
+                .filter(SubfieldField.class::isInstance)
+                .map(SubfieldField.class::cast)
+                .filter(s -> s.subfieldProperty.get().equals(search));
     }
 
     private final class SubfieldField extends HBox {

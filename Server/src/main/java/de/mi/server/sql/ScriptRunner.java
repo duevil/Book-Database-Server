@@ -39,10 +39,9 @@ class ScriptRunner extends ExecutorBase<Void> {
                 var statement = connection.createStatement();
                 var scanner = new Scanner(path, Charset.defaultCharset())
         ) {
-            var sb = new StringBuilder();
             // save original auto commit value to restore it later
             boolean origAutoCommit = connection.getAutoCommit();
-            executionLoop(connection, statement, scanner, sb);
+            executionLoop(connection, statement, scanner);
             // restore previous auto commit state
             connection.setAutoCommit(origAutoCommit);
         } catch (SQLException e) {
@@ -50,14 +49,11 @@ class ScriptRunner extends ExecutorBase<Void> {
         }
     }
 
-    private static void executionLoop(
-            Connection connection,
-            Statement statement,
-            Scanner scanner,
-            StringBuilder sb) throws SQLException {
+    private static void executionLoop(Connection connection, Statement statement, Scanner scanner) throws SQLException {
+        var sb = new StringBuilder();
+        // set auto commit to false, ensuring the sql script will only be executed as one
         connection.setAutoCommit(false);
         try {
-            // set auto commit to false, ensuring the sql script will only be executed as one
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 // ignore blank line or line comments
@@ -79,7 +75,6 @@ class ScriptRunner extends ExecutorBase<Void> {
 
     @Override
     public Void execute(Object... values) throws SQLException {
-        var sb = new StringBuilder();
         try (var scanner = new Scanner(data, Charset.defaultCharset())) {
             Statement statement = getStatement();
             if (statement instanceof PreparedStatement) {
@@ -88,7 +83,7 @@ class ScriptRunner extends ExecutorBase<Void> {
             Connection connection = statement.getConnection();
             // save original auto commit value to restore it later
             boolean origAutoCommit = connection.getAutoCommit();
-            executionLoop(connection, statement, scanner, sb);
+            executionLoop(connection, statement, scanner);
             // restore previous auto commit state
             connection.setAutoCommit(origAutoCommit);
         }

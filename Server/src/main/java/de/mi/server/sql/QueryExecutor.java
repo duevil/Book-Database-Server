@@ -2,6 +2,7 @@ package de.mi.server.sql;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collections;
@@ -26,8 +27,8 @@ class QueryExecutor<T> extends ExecutorBase<List<T>> {
     @Override
     public List<T> execute(Object... values) throws SQLException {
         var queryResult = new LinkedList<Map<String, Object>>();
-        var statement = getStatement();
-        var typeMap = statement.getConnection().getTypeMap();
+        Statement statement = getStatement();
+        Map<String, Class<?>> typeMap = statement.getConnection().getTypeMap();
 
         ResultSet resultSet;
         if (statement instanceof PreparedStatement preparedStatement) {
@@ -35,11 +36,11 @@ class QueryExecutor<T> extends ExecutorBase<List<T>> {
             resultSet = preparedStatement.executeQuery();
         } else resultSet = statement.executeQuery(getSql());
 
-        var resultSetMetaData = resultSet.getMetaData();
-        var columnCount = resultSetMetaData.getColumnCount();
+        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+        int columnCount = resultSetMetaData.getColumnCount();
 
         while (resultSet.next()) {
-            var map = new HashMap<String, Object>(columnCount);
+            HashMap<String, Object> map = new HashMap<>(columnCount);
             for (int i = 1; i <= columnCount; i++) {
                 map.put(
                         resultSetMetaData.getColumnName(i),

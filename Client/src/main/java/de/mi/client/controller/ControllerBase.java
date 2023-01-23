@@ -44,11 +44,11 @@ abstract class ControllerBase {
                 .orElse("");
     }
 
+    public abstract void initialize();
+
     public final SimpleObjectProperty<String> getAppName() {
         return model.getProgrammName();
     }
-
-    public abstract void initialize();
 
     protected final void selectionAction(boolean isUpdate, boolean isDelete, boolean isCreate) {
         try {
@@ -84,6 +84,18 @@ abstract class ControllerBase {
                 });
             }
 
+        }
+    }
+
+    protected final void loadBooks(boolean filter) {
+        if (filter) {
+            if (state.get() == State.NONE) {
+                selectedBook.set(null);
+                getFilter().ifPresent(model::loadBooks);
+            } else alertCantPerformAction("applying filter");
+        } else {
+            model.loadBooks();
+            filterProperties.clear();
         }
     }
 
@@ -155,18 +167,6 @@ abstract class ControllerBase {
             });
 
             return Optional.empty();
-        }
-    }
-
-    protected final void loadBooks(boolean filter) {
-        if (filter) {
-            if (state.get() == State.NONE) {
-                selectedBook.set(null);
-                getFilter().ifPresent(model::loadBooks);
-            } else alertCantPerformAction("applying filter");
-        } else {
-            model.loadBooks();
-            filterProperties.clear();
         }
     }
 
