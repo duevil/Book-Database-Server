@@ -17,6 +17,12 @@ import javafx.scene.layout.VBox;
 
 import java.util.LinkedList;
 
+/**
+ * Implementiert eine {@link VBox} mit einer Liste aus {@link Author Autoren},
+ * welche je nach Zustand geändert entfernt und hinzugefügt werden können
+ *
+ * @author Malte Kasolowsky <code>m30114</code>
+ */
 @SuppressWarnings({"java:S2211", "java:S2972", "java:S134", "java:S3776", "java:S1135"}) // TODO: remove suppression
 class AuthorPane extends VBox {
     private static final double SPACING = 10D;
@@ -24,6 +30,9 @@ class AuthorPane extends VBox {
             = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final BooleanProperty editableProperty = new SimpleBooleanProperty();
 
+    /**
+     * Konstruktor; initialisiert die geerbte {@link VBox} sowie den Inhalt
+     */
     public AuthorPane() {
         super(SPACING);
         final var children = super.getChildren();
@@ -60,17 +69,36 @@ class AuthorPane extends VBox {
         });
     }
 
+    /**
+     * Getter für die gespeicherten {@link Author Autoren}
+     *
+     * @return Eine {@link ListProperty} mit den momenten angezeigten Autoren
+     */
     public ListProperty<AuthorProperties> authorProperties() {
         return authors;
     }
 
+    /**
+     * Getter für den Zustand des Veränderbarkeit des Elements
+     *
+     * @return Die {@link BooleanProperty}, welche anzeigt, ob die Autoren bearbeitet werden können oder nicht
+     */
     public BooleanProperty editableProperty() {
         return editableProperty;
     }
 
+    /**
+     * Innere Klasse, welche {@link AuthorProperties} speichert und diese bei Veränderbarkeit des Hauptelementes
+     * über zwei {@link TextField Textfelder} veränderbar macht
+     */
     private final class AuthorField extends HBox {
         private final AuthorProperties authorProperties;
 
+        /**
+         * Konstruktor; initialisiert den Inhalt des Elements
+         *
+         * @param authorProperties Die {@link AuthorProperties}, welche an die Textfelder gebunden werden
+         */
         private AuthorField(AuthorProperties authorProperties) {
             this.authorProperties = authorProperties;
             final Label authorLabel = new Label();

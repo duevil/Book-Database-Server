@@ -10,10 +10,20 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
 
-@SuppressWarnings({"java:S1133", "java:S1135"}) // TODO: remove suppression
+/**
+ * Implementiert einen {@link Executor} zum Ausführen eines SQl-Scripts, also mehrerer SQL-Befehle auf einmal
+ *
+ * @author Malte Kasolowsky <code>m30114</code>
+ */
 class ScriptRunner extends ExecutorBase<Void> {
     private final InputStream data;
 
+    /**
+     * Konstruktor; speichert ein {@link Statement} und einen {@link InputStream}
+     *
+     * @param statement Das Statement, über das die SQL-Befehle ausgeführt werden sollen
+     * @param data      Ein Datenstrom, welcher die SQL-Befehle beinhaltet
+     */
     public ScriptRunner(Statement statement, InputStream data) {
         super(statement, null);
         this.data = data;
@@ -49,6 +59,19 @@ class ScriptRunner extends ExecutorBase<Void> {
         }
     }
 
+    /**
+     * Liest alle SQl-Befehle aus dem gegebenen {@link Scanner} ein
+     * und führt diese aus mit dem gegebenen {@link Statement} aus
+     * <p>
+     * Dabei wird vor dem Ausführen Auto-Commit auf false gesetzt, tritt während der Ausführung ein Fehler auf,
+     * so wird ein Rollback ausgeführt,
+     * alle Änderungen werden also nur als eine einzelne, gesamte Transaktion durchgeführt
+     *
+     * @param connection Die Verbindung, über die das Statement ausgeführt wird
+     * @param statement  Das Statement, über das die ausgelesenen SQL-Befehle ausgeführt werden
+     * @param scanner    Der Scanner, aus dem die SQL-Befehle eingelesen werden
+     * @throws SQLException Wenn bei der Ausführung eine solche Ausnahme geworfen wird
+     */
     private static void executionLoop(Connection connection, Statement statement, Scanner scanner) throws SQLException {
         var sb = new StringBuilder();
         // set auto commit to false, ensuring the sql script will only be executed as one
@@ -73,6 +96,18 @@ class ScriptRunner extends ExecutorBase<Void> {
         connection.commit();
     }
 
+    /**
+     * List die Daten des gespeicherten {@link InputStream InputStreams} in einen {@link Scanner ein},
+     * mit welchem dann die SQL-Befehle
+     * {@link ScriptRunner#executionLoop(Connection, Statement, Scanner) ausgeführt} werden,
+     * wobei Auto-Commit vor der Ausführung auf false
+     * und nach erfolgreicher Ausführung wieder in den Ursprungszustand gesetzt wird
+     *
+     * @param values Wird für diese Implementierung nicht genutzt
+     * @return null
+     * @throws SQLException       Wenn bei der Ausführung eine solche Ausnahme geworfen wird
+     * @throws IllegalAccessError Wenn das gespeicherte Statement ein {@link PreparedStatement} ist
+     */
     @Override
     public Void execute(Object... values) throws SQLException {
         try (var scanner = new Scanner(data, Charset.defaultCharset())) {

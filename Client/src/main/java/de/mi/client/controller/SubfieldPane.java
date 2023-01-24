@@ -9,7 +9,6 @@ import javafx.beans.property.SimpleSetProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.SetChangeListener;
 import javafx.scene.Cursor;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -20,6 +19,12 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.stream.Stream;
 
+/**
+ * Implementiert eine {@link VBox} mit einer Liste aus {@link Subfield Teilgebieten},
+ * welche je nach Zustand ausgewählt, entfernt oder hinzugefügt werden können
+ *
+ * @author Malte Kasolowsky <code>m30114</code>
+ */
 @SuppressWarnings({"java:S2211", "java:S3366", "java:S2972", "java:S3776", "java:S1135"}) // TODO: remove suppression
 class SubfieldPane extends VBox {
     private static final double SPACING = 10D;
@@ -28,6 +33,11 @@ class SubfieldPane extends VBox {
     private final BooleanProperty editableProperty = new SimpleBooleanProperty();
     private final Set<Subfield> options;
 
+    /**
+     * Konstruktor; initializer die vererbte {@link VBox} und die eigenen Inhalte
+     *
+     * @param options Die möglichen {@link Subfield Teilgebiete}, die ausgewählt werden können
+     */
     public SubfieldPane(Set<Subfield> options) {
         super(SPACING);
         this.options = options;
@@ -51,7 +61,7 @@ class SubfieldPane extends VBox {
 
         editableProperty.addListener((observable, oldValue, newValue) -> {
             var map = new HashMap<Subfield, SubfieldField>();
-            for (Node child : children) {
+            for (var child : children) {
                 if (child instanceof SubfieldField subfieldField) {
                     map.put(subfieldField.subfieldProperty.get(), subfieldField);
                 }
@@ -71,14 +81,33 @@ class SubfieldPane extends VBox {
         });
     }
 
+    /**
+     * Getter für die aktuell ausgewählten {@link Subfield Teilgebiete}
+     *
+     * @return Eine {@link SetProperty}, welche die aktuell auswählten Teilgebiete enthält
+     */
     public SetProperty<Subfield> subfieldsProperty() {
         return subfieldsProperty;
     }
 
+    /**
+     * Getter für den Zustand des Veränderbarkeit des Elements
+     *
+     * @return Die {@link BooleanProperty}, welche anzeigt,
+     * ob die Auswahl der Teilgebiete verändert werden kann oder nicht
+     */
     public BooleanProperty editableProperty() {
         return editableProperty;
     }
 
+    /**
+     * Liest die gespeicherten {@link javafx.scene.Node} aus dem {@link HBox#getChildren() Inhalt der HBox} aus
+     * und sucht nach {@link SubfieldField Teilgebiet-Feldern},
+     * deren unterliegendes {@link Subfield} einem gesuchten entspricht
+     *
+     * @param search Das Teilgebiet, welches gesucht werden soll
+     * @return Einen {@link Stream}, welcher optimal ein oder kein Teilgebiet-Feld enthält
+     */
     private Stream<SubfieldField> fieldsForSubfield(Subfield search) {
         return super.getChildren()
                 .stream()
@@ -87,9 +116,18 @@ class SubfieldPane extends VBox {
                 .filter(s -> s.subfieldProperty.get().equals(search));
     }
 
+    /**
+     * Implementiert eine {@link HBox} zum Anzeigen und Auswählen eines {@link Subfield Teilgebiets}
+     * über eine {@link ComboBox}
+     */
     private final class SubfieldField extends HBox {
         private final ObjectProperty<Subfield> subfieldProperty;
 
+        /**
+         * Konstruktor; initialisiert den Inhalt
+         *
+         * @param subfield Das initial ausgewählte {@link Subfield}
+         */
         private SubfieldField(Subfield subfield) {
             var items = FXCollections.observableArrayList(options);
             final ComboBox<Subfield> comboBox = new ComboBox<>(items);

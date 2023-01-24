@@ -18,6 +18,12 @@ import javafx.collections.FXCollections;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+/**
+ * Klasse, welche die Werte eines {@link BookFilter Buchflters}
+ * mittels {@link javafx.beans.property.Property Properties} darstellt
+ *
+ * @author Malte Kasolowsky <code>m30114</code>
+ */
 class FilterProperties {
     private final StringProperty titleSearchProperty
             = new SimpleStringProperty(this, "Filter title search");
@@ -45,6 +51,15 @@ class FilterProperties {
     private final SetProperty<Subfield> subfieldsProperty
             = new SimpleSetProperty<>(this, "Filter subfields", FXCollections.observableSet());
 
+    /**
+     * Liest die aktuellen Werte der unterliegenden {@link javafx.beans.property.Property Properties} aus
+     * und erzeugt daraus einen neuen {@link BookFilter}; sind die Werte null oder leer,
+     * so werden diese trotzdem akzeptiert oder mit Standardwerten ersetzt
+     *
+     * @return Einen neuen Filter mit den Werten der Properties
+     * @throws Util.PropertyException Wenn einer der {@link Range}-Werte des Filters
+     *                                außerhalb ihres erlaubten Bereichs liegen
+     */
     public BookFilter get() throws Util.PropertyException {
         BookFilterBuilder builder = BookFilter.builder()
                 .searchTitle(titleSearchProperty.get())
@@ -56,6 +71,9 @@ class FilterProperties {
         return builder.build();
     }
 
+    /**
+     * Setzt die aktuell eingegebenen Werte des Filters zurück
+     */
     public void clear() {
         titleSearchProperty.set(null);
         authorSearchProperty.set(null);
@@ -68,42 +86,96 @@ class FilterProperties {
         subfieldsProperty.clear();
     }
 
+    /**
+     * Getter für den Wert der {@link BookFilter}-Titelsuche
+     *
+     * @return Die {@link Property}, welches die Titelsuche des Filters enthält
+     */
     public StringProperty titleSearchProperty() {
         return titleSearchProperty;
     }
 
+    /**
+     * Getter für den Wert der {@link BookFilter}-Autor-Namenssuche
+     *
+     * @return Die {@link Property}, welches die Titel-Suche des Filters enthält
+     */
     public StringProperty authorSearchProperty() {
         return authorSearchProperty;
     }
 
+    /**
+     * Getter für den unteren Wert des {@link BookFilter}-Jahresbereichs
+     *
+     * @return Die {@link Property}, welches die untere Grenze des Jahresbereichs des Filters enthält
+     */
     public Property<Integer> minYearProperty() {
         return yearRangeProperties.minProperty;
     }
 
+    /**
+     * Getter für den oberen Wert des {@link BookFilter}-Jahresbereichs
+     *
+     * @return Die {@link Property}, welches die obere Grenze des Jahresbereichs des Filters enthält
+     */
     public Property<Integer> maxYearProperty() {
         return yearRangeProperties.maxProperty;
     }
 
+    /**
+     * Getter für den unteren Wert des {@link BookFilter}-Seitenbereichs
+     *
+     * @return Die {@link Property}, welches die untere Grenze des Seitenbereichs des Filters enthält
+     */
     public Property<Integer> minPagesProperty() {
         return pageRangeProperties.minProperty;
     }
 
+    /**
+     * Getter für den oberen Wert des {@link BookFilter}-Seitenbereichs
+     *
+     * @return Die {@link Property}, welches die obere Grenze des Seitenbereichs des Filters enthält
+     */
     public Property<Integer> maxPagesProperty() {
         return pageRangeProperties.maxProperty;
     }
 
+    /**
+     * Getter für den unteren Wert des {@link BookFilter}-Bewertungsbereichs
+     *
+     * @return Die {@link Property}, welches die untere Grenze des Bewertungsbereichs des Filters enthält
+     */
     public IntegerProperty minRatingProperty() {
         return minRatingProperty;
     }
 
+    /**
+     * Getter für den oberen Wert des {@link BookFilter}-Bewertungsbereichs
+     *
+     * @return Die {@link Property}, welches die obere Grenze des Bewertungsbereichs des Filters enthält
+     */
     public IntegerProperty maxRatingProperty() {
         return maxRatingProperty;
     }
 
+    /**
+     * Getter für den Wert der {@link BookFilter}-Teilgebiete
+     *
+     * @return Die {@link SetProperty}, welches die Teilgebiete des Filters enthält
+     */
     public SetProperty<Subfield> subfieldsProperty() {
         return subfieldsProperty;
     }
 
+    /**
+     * Einfache Datenklasse zum einfachen Verwalten von {@link Property Properties}
+     * innerhalb einer gegebenen {@link Range}
+     *
+     * @param range       Der Bereich, für dem die untere und obere Grenze gespeichert werden soll
+     * @param minProperty Die Property, welche die untere Grenze eines Bereichs innerhalb des gegebenen enthält
+     * @param maxProperty Die Property, welche die obere Grenze eines Bereichs innerhalb des gegebenen enthält
+     * @param name        Der Name der Instanz dieser Klasse
+     */
     private record RangeProperties(
             Range range,
             Property<Integer> minProperty,
@@ -111,8 +183,18 @@ class FilterProperties {
             String name
     ) implements Consumer<BiConsumer<Integer, Integer>> {
 
+        /**
+         * Gibt die aktuellen Werte der gespeicherten {@link Property Properties}
+         * oder den minimalen bzw. maximalen Wert des ursprünglichen Bereiches,
+         * sollte einer Properties außerhalb dieses Bereichs liegen,
+         * an den gegeben {@link BiConsumer} weiter
+         *
+         * @param rangeConsumer Ein Ausdruck, welcher die beiden Bereichsgrenzen übergeben bekommt
+         * @throws Util.PropertyException Wenn der Werte der Property für die untere Grenze
+         *                                größer als der für die obere Grenze ist
+         */
         @Override
-        public void accept(BiConsumer<Integer, Integer> rangeConsumer) {
+        public void accept(BiConsumer<Integer, Integer> rangeConsumer) throws Util.PropertyException {
             try {
                 rangeConsumer.accept(
                         Util.readPropertyOptional(minProperty, range).orMin(),

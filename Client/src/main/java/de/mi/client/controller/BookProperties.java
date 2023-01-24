@@ -18,6 +18,12 @@ import javafx.collections.FXCollections;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Klasse, welche die Werte eines {@link Book Buches}
+ * mittels {@link javafx.beans.property.Property Properties} darstellt
+ *
+ * @author Malte Kasolowsky <code>m30114</code>
+ */
 class BookProperties {
     private final StringProperty titleProperty
             = new SimpleStringProperty(this, "Book title");
@@ -35,6 +41,13 @@ class BookProperties {
             = new SimpleSetProperty<>(this, "Book subfields", FXCollections.observableSet());
     private int id = -1;
 
+    /**
+     * Liest aktuellen Werte die unterliegenden {@link Property Properties} aus
+     * und erzeugt daraus ein neues {@link Book}
+     *
+     * @return Einen neues Buch mit den Werten der Properties und der gespeicherten ID
+     * @throws Util.PropertyException Falls die Werte leer oder bei den Zahlen außerhalb des Standardbereiches liegen
+     */
     public Book get() throws Util.PropertyException {
 
         String title = Util.readProperty(titleProperty);
@@ -55,6 +68,13 @@ class BookProperties {
         return new Book(id, title, authors, publisher, year, pages, rating, subfields);
     }
 
+    /**
+     * Setzt die Werte der unterliegenden {@link Property Properties}
+     * auf die Werte des übergebenen {@link Book Buches}
+     * und speichert die ID des Buches
+     *
+     * @param book Das Buch, dessen Werte ausgelesen werden soll
+     */
     public void set(Book book) {
         id = book.id();
         titleProperty.set(book.title());
@@ -72,6 +92,10 @@ class BookProperties {
         subfieldsProperty.addAll(book.subfields());
     }
 
+    /**
+     * Setzt die Werte der unterliegenden {@link Property Properties} auf null
+     * bzw. leert die Collection-Properties und setzt die gespeicherte Buch-ID auf 0
+     */
     public void clear() {
         id = 0;
         titleProperty.set(null);
@@ -83,30 +107,71 @@ class BookProperties {
         subfieldsProperty.clear();
     }
 
+    /**
+     * Getter für den {@link Book}-Title
+     *
+     * @return Die {@link Property}, welche den Titel des Buches enthält
+     */
     public StringProperty titleProperty() {
         return titleProperty;
     }
 
+
+    /**
+     * Getter für die {@link Book}-{@link AuthorProperties Autoren}
+     *
+     * @return Die {@link ListProperty}, welche die Autoren des Buches enthält
+     */
     public ListProperty<AuthorProperties> authorsProperty() {
         return authorsProperty;
     }
 
+
+    /**
+     * Getter für den {@link Book}-Verleger
+     *
+     * @return Die {@link Property}, welche den Verleger des Buches enthält
+     */
     public StringProperty publisherProperty() {
         return publisherProperty;
     }
 
+
+    /**
+     * Getter für das {@link Book}-Erscheinungsjahr
+     *
+     * @return Die {@link Property}, welche das Erscheinungsjahr des Buches enthält
+     */
     public Property<Integer> yearProperty() {
         return yearProperty;
     }
 
+
+    /**
+     * Getter für die {@link Book}-Seitenzahl
+     *
+     * @return Die {@link Property}, welche die Anzahl an Seiten des Buches enthält
+     */
     public Property<Integer> pagesProperty() {
         return pagesProperty;
     }
 
+
+    /**
+     * Getter für die {@link Book}-Bewertung
+     *
+     * @return Die {@link Property}, welche die Bewertung des Buches enthält
+     */
     public IntegerProperty ratingProperty() {
         return ratingProperty;
     }
 
+
+    /**
+     * Getter für die {@link Book}-{@link Subfield Teilgebiete}
+     *
+     * @return Die {@link SetProperty}, welche die Teilgebiete des Buches enthält
+     */
     public SetProperty<Subfield> subfieldsProperty() {
         return subfieldsProperty;
     }

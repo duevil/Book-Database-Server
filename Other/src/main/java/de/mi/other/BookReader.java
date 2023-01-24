@@ -15,9 +15,20 @@ import java.util.Map;
 import java.util.StringJoiner;
 import java.util.logging.Logger;
 
+/**
+ * Klasse zum Einlesen der Daten aus der Datenbank und dem Übertragen bzw. Umwandeln dieser in eine sql-Datei
+ *
+ * @author Malte Kasolowsky <code>m30114</code>
+ */
 public class BookReader {
     private static final String NL = System.lineSeparator();
 
+    /**
+     * Liest alle Daten aus der Datenbank ein, formt diese in SQL-Insert-Befehle um
+     * und schreibt die Befehle dann in eine sql-Datei
+     *
+     * @param args Nicht benutzt
+     */
     public static void main(String[] args) {
         try (var outStream = Files.newOutputStream(Path.of("literature.sql"));
              var file = new PrintStream(outStream, true, Charset.defaultCharset())) {
@@ -156,6 +167,13 @@ public class BookReader {
         }
     }
 
+    /**
+     * Schreibt einen SQL-Insert-Befehl aus einer {@link Map} mit den Spaltennamen und den dazugehörigen Namen
+     *
+     * @param table  Der Name der Tabelle, für die der Insert erstellt werden soll
+     * @param values Die Map mit den Werten für den Insert
+     * @return Eine Zeichenkette mit dem erstellten SQL-Insert-Befehl
+     */
     private static String insert(String table, Map<String, String> values) {
         final var sj0 = new StringJoiner(", ", "INSERT INTO " + table + " (", ")" + NL);
         final var sj1 = new StringJoiner(", ", "VALUES (", ");" + NL);
@@ -164,6 +182,13 @@ public class BookReader {
         return "%s%s".formatted(sj0.toString(), sj1.toString());
     }
 
+    /**
+     * Ersetzt alle vorhandenen einfachen Anführungszeichen mit zwei einfachen
+     * und hängt ein führenden und abschließendes einfaches Anführungszeichen an
+     *
+     * @param s Der zu formatierende String
+     * @return Der formatierte String
+     */
     private static String quoteIfy(String s) {
         return "'%s'".formatted(s.replace("'", "''"));
     }

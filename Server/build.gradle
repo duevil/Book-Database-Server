@@ -8,6 +8,7 @@ jar {
                 'Main-Class': application.mainClassName
         )
     }
+    from { compileJava.classpath.collect { it.isDirectory() ? it : zipTree(it) } }
 }
 
 dependencies {

@@ -7,7 +7,7 @@ subprojects {
     apply plugin: 'application'
 
     group 'de.mi'
-    version '0.6.5'
+    version '0.7'
 
     sourceCompatibility = '17'
     targetCompatibility = '17'
@@ -29,6 +29,10 @@ subprojects {
 
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
+    }
+
+    tasks.withType(Jar) {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
 
     repositories {

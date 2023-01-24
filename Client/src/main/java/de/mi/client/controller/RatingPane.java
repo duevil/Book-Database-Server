@@ -16,6 +16,11 @@ import javafx.scene.text.Font;
 import java.util.Collection;
 import java.util.LinkedList;
 
+/**
+ * Implementiert eine {@link HBox} zum Anzeigen und Bearbeiten einer Bewertung
+ *
+ * @author Malte Kasolowsky <code>m30114</code>
+ */
 @SuppressWarnings({"java:S2211", "java:S1135"}) // TODO: remove suppression
 class RatingPane extends HBox {
     private static final Font FONT = Font.font(16D);
@@ -25,6 +30,12 @@ class RatingPane extends HBox {
     private final Collection<Button> buttons = new LinkedList<>();
     private final Collection<Label> labels = new LinkedList<>();
 
+    /**
+     * Konstruktor; initialisiert die vererbte {@link HBox} mit dem Inhalt;
+     * je nachdem welcher Wert die {@link RatingPane#editableProperty()} hat,
+     * werden {@link Label} mit der aktuellen Bewertung oder {@link Button Buttons}
+     * zum Einstellen der Bewertung angezeigt
+     */
     public RatingPane() {
 
         for (int j = 1; j <= MAX_RATING; j++) {
@@ -56,10 +67,21 @@ class RatingPane extends HBox {
         children.addAll(labels);
     }
 
+    /**
+     * Getter für den Wert der Bewertung
+     *
+     * @return Eine {@link IntegerProperty}, welche den Wert der Bewertung enthält
+     */
     public IntegerProperty ratingProperty() {
         return ratingProperty;
     }
 
+    /**
+     * Getter für den Wert der Veränderbarkeit der Bewertung;
+     * ist dieser true, so kann die Bewertung bearbeitet werden, andernfalls nicht
+     *
+     * @return Eine {@link BooleanProperty}, welche den Wert der Veränderbarkeit der Bewertung enthält
+     */
     public BooleanProperty editableProperty() {
         return editableProperty;
     }

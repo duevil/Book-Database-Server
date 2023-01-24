@@ -17,6 +17,11 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
+/**
+ * Controller-Klasse der Client-Anwendung
+ *
+ * @author Malte Kasolowsky <code>m30114</code>
+ */
 @SuppressWarnings({"java:S109", "java:S1820", "java:S3242", "java:S2211", "java:S1135"}) // TODO: remove suppression
 public final class Controller extends ControllerBase {
     @FXML
@@ -70,6 +75,10 @@ public final class Controller extends ControllerBase {
     @FXML
     public VBox selectionMainPain;
 
+    /**
+     * {@link Button#onActionProperty() OnAction-Methode} des Filter-Clear-Buttons,
+     * welcher den Filter und das ausgewählte Buch leert und alle Bücher lädt
+     */
     @FXML
     public void clearFilter() {
         selectedBookProperties.clear();
@@ -77,11 +86,23 @@ public final class Controller extends ControllerBase {
         applyFilter();
     }
 
+    /**
+     * {@link Button#onActionProperty() OnAction-Methode} des Filter-Anwenden-Buttons,
+     * welcher einen {@link de.mi.common.BookFilter} aus den aktuell eingegebenen Werten erstellt
+     * und damit die Bücher lädt
+     */
     @FXML
     public void applyFilter() {
         loadBooks(true);
     }
 
+    /**
+     * {@link Button#onActionProperty() OnAction-Methode} für die Update-, Delete- und Create-Button;
+     * liest die aktuellen Werte des ausgewählten Buches ein und führt die gewählte Aktion aus
+     *
+     * @param event Das auslösende {@link ActionEvent}, welches genutzt wird, um zu ermitteln,
+     *              welche Aktion ausgeführt werden soll
+     */
     @FXML
     public void selectionEvent(ActionEvent event) {
         if (event.getSource() instanceof Button triggerButton)
@@ -91,6 +112,10 @@ public final class Controller extends ControllerBase {
                     triggerButton == createButton);
     }
 
+    /**
+     * Methode zum Initialisieren der View beim Laden der Oberfläche;
+     * diese Methode wird beim Laden der View durch den {@link javafx.fxml.FXMLLoader} aufgerufen
+     */
     @FXML
     @Override
     public void initialize() {
@@ -102,12 +127,18 @@ public final class Controller extends ControllerBase {
         loadBooks(false);
     }
 
+    /**
+     * Initialisiert die Breiten der drei Haupt-Spalten des UIs
+     */
     private void initialiseMainPanes() {
         filterMainPane.prefWidthProperty().bind(previewMainPane.widthProperty());
         selectionMainPain.prefWidthProperty().bind(previewMainPane.widthProperty());
         previewMainPane.prefWidthProperty().bind(previewMainPane.widthProperty().multiply(1.5));
     }
 
+    /**
+     * Initialisiert die Felder der Buch-Auswahl
+     */
     private void initialiseSelection() {
         var selectionAuthors = new AuthorPane();
         Util.bindScrollPaneContentOrLabel(
@@ -149,6 +180,9 @@ public final class Controller extends ControllerBase {
         selectionAuthorPane.prefHeightProperty().bind(selectionSubfieldsPane.heightProperty());
     }
 
+    /**
+     * Initialisiert die Felder der Filter-Eingabe
+     */
     private void initialiseFilter() {
 
         var filterSubfields = new SubfieldPane(model.getSubfields());
@@ -196,11 +230,17 @@ public final class Controller extends ControllerBase {
         maxRating.textProperty().bind(filterProperties.maxRatingProperty().asString());
     }
 
+    /**
+     * Initialisiert den Text des Update- und Create-Buttons
+     */
     private void initialiseButtons() {
         updateButton.textProperty().bind(new When(isUpdating).then("Apply").otherwise("Update"));
         createButton.textProperty().bind(new When(isCreating).then("Apply").otherwise("New"));
     }
 
+    /**
+     * Initialisiert die Vorschau der geladenen Bücher
+     */
     private void initializeBookView() {
         bookView.itemsProperty().bind(model.getLoadedBooks());
         bookView.disableProperty().bind(isSelectionEditable);

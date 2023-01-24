@@ -15,6 +15,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Utility-Klasse mit Funktionen zum Laden von Literatur-Daten aus der Datenbank (DRL)
+ *
+ * @author Malte Kasolowsky <code>m30114</code>
+ */
 public final class LiteratureQuery {
     private static final Mapper<Book> BOOK_MAPPER = values -> Optional.ofNullable(values.get("id"))
             .map(id -> new Book(
@@ -87,17 +92,38 @@ public final class LiteratureQuery {
         }
     }
 
+    /**
+     * Privater Konstruktor; eine Erzeugung einer Klassen-Instanz ist nicht nötig
+     */
     private LiteratureQuery() {
     }
 
+    /**
+     * Gibt die statisch geladenen {@link Subfield Teilgebiete} zurück
+     *
+     * @return Alle aus der Datenbank geladenen Teilgebiete
+     */
     public static Set<Subfield> getSubfields() {
         return SUBFIELDS;
     }
 
+    /**
+     * Lädt alle {@link Book Bücher} aus der Datenbank
+     *
+     * @return Alle in der Datenbank gespeicherten Bücher
+     * @throws SQLException Wenn beim Laden eine solche Ausnahme geworfen wird
+     */
     public static Set<Book> queryBooks() throws SQLException {
         return queryBooks(EMPTY_FILTER);
     }
 
+    /**
+     * Lädt alle {@link Book Bücher} mittels eines {@link BookFilter Filters} aus der Datenbank
+     *
+     * @param filter Der Filter, von welchem die geladenen Bücher spezifiziert werden
+     * @return Die geladenen Bücher
+     * @throws SQLException Wenn beim Laden eine solche Ausnahme geworfen wird
+     */
     public static Set<Book> queryBooks(BookFilter filter) throws SQLException {
         final String bookSQL = String.format(
                 BOOK_SQL,
@@ -138,10 +164,27 @@ public final class LiteratureQuery {
         }
     }
 
+    /**
+     * Lädt alle {@link Author Autoren}, die einen gegebenen Namen haben,
+     * aus der Datenbank, und gibt den ersten gefunden zurück
+     *
+     * @param firstName Der Vorname des zu suchenden Autors
+     * @param lastName  Der Nachname des zu suchenden Autors
+     * @return Der erste Autor, dessen Namen dem gesuchten entspricht
+     * @throws SQLException Wenn beim Laden eine solche Ausnahme geworfen wird
+     */
     static Author queryAuthorByName(String firstName, String lastName) throws SQLException {
         return AUTHOR_EXECUTOR.execute(firstName, lastName).get(0);
     }
 
+    /**
+     * Lädt alle {@link Book Bücher}, deren Titel dem gegebenen entspricht, aus der Datenbank,
+     * und gibt den ersten gefunden zurück
+     *
+     * @param title Der zu suchende Buchtitel
+     * @return Das erste Buch, dessen Titel dem gesuchten entspricht
+     * @throws SQLException Wenn beim Laden eine solche Ausnahme geworfen wird
+     */
     static Book queryBookByTitle(String title) throws SQLException {
         return BOOK_EXECUTOR.execute(title).get(0);
     }

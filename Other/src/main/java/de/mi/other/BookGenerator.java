@@ -18,6 +18,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Diese Klasse wurde am Anfang des Projektes genutzt,
+ * um zufällig generierte {@link Book Buchdaten} zu erzeugen
+ * und diese in eine sql-Datei zu schreiben
+ *
+ * @author Malte Kasolowsky <code>m30114</code>
+ * @deprecated Da den Büchern eine Bewertung gegeben wurde, ist diese Klasse nicht mehr aktuell,
+ * da sie keine Bewertung erzeugt; zudem wird sie nicht mehr benötigt,
+ * da die nötigen Daten bereits erzeugt wurden
+ */
 @SuppressWarnings({"java:S109", "java:S1123", "java:S1133", "java:S1135"}) // TODO: remove suppression
 @Deprecated(since = "rating was added")
 public final class BookGenerator {
@@ -72,9 +82,18 @@ public final class BookGenerator {
     private static int authorID;
     private static int bookID;
 
+    /**
+     * Konstruktor; privat
+     */
     private BookGenerator() {
     }
 
+    /**
+     * Erzeugt eine Liste mit Büchern, schreibt diese in ein SQL-Script und gibt sie in der Konsole aus
+     *
+     * @param args nicht benutzt
+     * @throws IOException Wenn beim Schreiben des SQL-Script eine solche Ausnahme geworfen wird
+     */
     @SuppressWarnings("java:S2096")
     public static void main(String[] args) throws IOException {
         List<Book> bookList = generateBooks();
@@ -82,6 +101,14 @@ public final class BookGenerator {
         printBookList(bookList);
     }
 
+    /**
+     * Erzeugt ein neues Buch;
+     * wählt zwischen einem und vier zufällig(e) {@link Subfield Teilgebiet(e)}
+     * und erwartet die Eingabe eines passenden Buchtitels
+     *
+     * @return Das erzeugte Buch, deren Daten neben den Teilgebieten und dem Title
+     * mit {@link BookGenerator#getBook(String, Set)} erzeugt wurden
+     */
     private static List<Book> generateBooks() {
         var bookList = new LinkedList<Book>();
         while (true) {
@@ -98,6 +125,13 @@ public final class BookGenerator {
         return bookList;
     }
 
+    /**
+     * Erzeugt ein neues Buch mit zufälligen Daten
+     *
+     * @param title     Der vorgegebene Titel des Buches, welcher übernommen wird
+     * @param subfields Die vorgegebenen Teilgebiete, welche übernommen werden
+     * @return Ein neues Buch mit den erzeugten bzw. gegebenen Werten
+     */
     private static Book getBook(String title, Set<Subfield> subfields) {
         bookID += 1;
         var authors = Stream.generate(() -> {
@@ -110,6 +144,12 @@ public final class BookGenerator {
         return new Book(bookID, title, authors, Faker.instance().book().publisher(), year, pages, 1, subfields);
     }
 
+    /**
+     * Schreibt eine List mit Büchern als SQL-Insert-Befehle in eine sql-Datei
+     *
+     * @param bookList Die Bücher, aus denen ein SQL-Script erstellt werden soll
+     * @throws IOException Wenn beim Schreiben der Datei eine solche Ausnahme geworfen wird
+     */
     private static void writeToSQLFile(List<Book> bookList) throws IOException {
         try (var writer = Files.newBufferedWriter(GENERATED_FILE_PATH)) {
             String sql = bookList.stream().map((Book b) -> {
@@ -141,6 +181,11 @@ public final class BookGenerator {
         }
     }
 
+    /**
+     * Gibt eine Liste mit Büchern formatiert in der Konsole aus
+     *
+     * @param bookList Die auszugebenden Bücher
+     */
     private static void printBookList(List<Book> bookList) {
         bookList.forEach((Book b) -> System.out.printf(
                 PRINT_TEMPLATE,

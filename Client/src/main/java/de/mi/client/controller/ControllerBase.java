@@ -11,6 +11,15 @@ import javafx.scene.control.ButtonType;
 
 import java.util.Optional;
 
+/**
+ * Basisklasse für {@link Controller}; dient in erster Stelle dazu, das Gewicht der Controller-Klasse zu reduzieren
+ * und dafür zu sorgen, dass diese nur die Initialisierung und {@link javafx.fxml.FXML}-Felder und -Methoden beinhaltet
+ * <p>
+ * Für die Server-Kommunikation und dem Lesen und Schreiben von (Buch-)Daten wird ein bei der Instanziierung
+ * neu erstelltes {@link Model} genutzt
+ *
+ * @author Malte Kasolowsky <code>m30114</code>
+ */
 @SuppressWarnings({"java:S2211", "java:S1135"}) // TODO: remove suppression
 abstract class ControllerBase {
     protected final BookProperties selectedBookProperties = new BookProperties();
@@ -22,6 +31,10 @@ abstract class ControllerBase {
     protected final BooleanBinding isCreating = state.isEqualTo(State.CREATING);
     protected final BooleanBinding isSelectionEditable = isUpdating.or(isCreating);
 
+    /**
+     * Konstruktor; initialisiert {@link javax.swing.event.ChangeListener}
+     * für einige {@link javafx.beans.property.Property Properties}
+     */
     protected ControllerBase() {
         isCreating.addListener((observable, oldValue, newValue) -> {
             if (Boolean.TRUE.equals(newValue)) selectedBook.set(null);
@@ -36,6 +49,13 @@ abstract class ControllerBase {
         });
     }
 
+    /**
+     * Utility-Methode zum Umformen der {@link Throwable#getCause() Ursache} einer Ausnahme in einen String
+     *
+     * @param e   Eine Ausnahme, dessen Ursache ausgelesen werden soll
+     * @param <X> Der Typ der Ausnahme; muss {@link Throwable} erweitern
+     * @return Einen String mit der {@link Throwable#getCause() Nachricht} der Ursache
+     */
     private static <X extends Throwable> String getCauseMsg(X e) {
         return Optional.of(e)
                 .map(Throwable::getCause)
@@ -44,12 +64,29 @@ abstract class ControllerBase {
                 .orElse("");
     }
 
+    /**
+     * Abstrakte Methode zum Initialisieren des Controllers und der View; sollte beim Laden der View aufgerufen werden
+     */
     public abstract void initialize();
 
+    /**
+     * Gibt den Namen des Programms, welcher durch das {@link Model} {@link Model#getProgrammName()} geladen wurde
+     *
+     * @return Eine {@link javafx.beans.property.Property} mit dem Namen der Anwendung
+     */
     public final SimpleObjectProperty<String> getAppName() {
         return model.getProgrammName();
     }
 
+    /**
+     * Methode zum Bearbeiten des ausgewählten {@link Book Buches};
+     * je nach gewählter Aktion wird diese so fern möglich ausgeführt
+     * und dabei entstehende Ausnahmen abgefangen und mittels eines {@link Alert Alerts} angezeigt
+     *
+     * @param isUpdate Ob das ausgewählte Buch ge-updated werden soll
+     * @param isDelete Ob das ausgewählte Buch gelöscht werden soll
+     * @param isCreate Ob ein neues Buch erstellt werden soll
+     */
     protected final void selectionAction(boolean isUpdate, boolean isDelete, boolean isCreate) {
         try {
             if (isUpdate) updateBook();
@@ -87,6 +124,16 @@ abstract class ControllerBase {
         }
     }
 
+    /**
+     * Lädt die {@link Book Bücher aus der Datenbank};
+     * ist <i>filter</i> auf true, so werden die eingegebene Filter {@link ControllerBase#getFilter() ausgelesen}
+     * und die Bücher mit {@link Model#loadBooks(BookFilter)} gefiltert geladen,
+     * sofern der {@link State} des Controllers auf {@link State#NONE} steht,
+     * ansonsten wird eine entsprechende {@link ControllerBase#alertCantPerformAction(String) Fehlermeldung} angezeigt;
+     * ist <i>filter</i> auf false, so werden alle Bücher mit {@link Model#loadBooks()} geladen
+     *
+     * @param filter Ob die Bücher gefiltert geladen werden sollen oder nicht
+     */
     protected final void loadBooks(boolean filter) {
         if (filter) {
             if (state.get() == State.NONE) {
@@ -99,6 +146,15 @@ abstract class ControllerBase {
         }
     }
 
+    /**
+     * Updated die Werte des ausgewählten {@link Book Buches};
+     * ist der {@link State} des Controllers auf {@link State#NONE}, so wird dieser auf {@link State#UPDATING}
+     * gesetzt, ist er auf {@link State#UPDATING}, so werden die aktuellen Werte der {@link BookProperties}
+     * ausgelesen und die Werte des ausgewählten Buches mit {@link Model#updateBook(Book)} ge-updatet
+     * <p>
+     * Wenn der {@link State} des Controllers nicht {@link State#NONE} ist,
+     * so wird eine {@link ControllerBase#alertCantPerformAction(String) Fehlermeldung angezeigt}
+     */
     private void updateBook() {
         switch (state.get()) {
             case NONE -> state.set(State.UPDATING);
@@ -111,6 +167,15 @@ abstract class ControllerBase {
         }
     }
 
+    /**
+     * Erstellt ein neues {@link Book} aus den eingegebenen Werten;
+     * ist der {@link State} des Controllers auf {@link State#NONE}, so wird dieser auf {@link State#CREATING}
+     * gesetzt, ist er auf {@link State#CREATING}, so werden die aktuellen Werte der {@link BookProperties}
+     * ausgelesen und das erzeugte Buch mit {@link Model#createBook(Book)} erstellt
+     * <p>
+     * Wenn der {@link State} des Controllers nicht {@link State#NONE} ist,
+     * so wird eine {@link ControllerBase#alertCantPerformAction(String) Fehlermeldung angezeigt}
+     */
     private void createBook() {
         switch (state.get()) {
             case NONE -> state.set(State.CREATING);
@@ -123,6 +188,15 @@ abstract class ControllerBase {
         }
     }
 
+    /**
+     * Löscht das momentan ausgewählte {@link Book};
+     * zeigt ein {@link Alert} zur Bestätigung des Löschens,
+     * liest bei Bestätigung die aktuellen Werte der {@link BookProperties} aus
+     * und löscht dieses mit {@link Model#deleteBook(Book)}
+     * <p>
+     * Wenn der {@link State} des Controllers nicht {@link State#NONE} ist,
+     * so wird eine {@link ControllerBase#alertCantPerformAction(String) Fehlermeldung angezeigt}
+     */
     private void deleteBook() {
         if (state.get() == State.NONE) {
             state.set(State.DELETING);
@@ -145,6 +219,13 @@ abstract class ControllerBase {
         } else alertCantPerformAction(State.DELETING.toString());
     }
 
+    /**
+     * Liest den {@link FilterProperties#get() Filter} aus
+     * und zeigt ein {@link Alert} mit der Fehlermeldung, sollte beim Auslesen eine geworfen werden
+     *
+     * @return Ein {@link Optional}, welches einen {@link BookFilter} enthält,
+     * sollte dieser erfolgreich ausgelesen worden sein, ansonsten ein {@link Optional#empty() leeres Optional}
+     */
     private Optional<BookFilter> getFilter() {
         try {
             return Optional.of(filterProperties.get());
@@ -170,6 +251,12 @@ abstract class ControllerBase {
         }
     }
 
+    /**
+     * Erstellt und zeigt ein {@link Alert} mit dem Hinweis, das eine Aktion ausgeführt werden kann
+     * und einem optionalen Grund
+     *
+     * @param reason Der Grund, warum die Aktion nicht ausgeführt werden kann; kann null sein
+     */
     private void alertCantPerformAction(String reason) {
         var alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setHeaderText("Action can currently not be performed");
@@ -180,9 +267,18 @@ abstract class ControllerBase {
         alert.showAndWait();
     }
 
+    /**
+     * Enum für den Zustand des Controllers, genauer gesagt den Zustand der Bearbeitung des ausgewählten Buches
+     */
     private enum State {
         NONE, UPDATING, DELETING, CREATING;
 
+        /**
+         * Erzeugt String-Repräsentation des Zustandes;
+         * ist der Zustand {@link State#NONE}, so ist der String null
+         *
+         * @return Eine String-Repräsentation des Zustandes
+         */
         @Override
         public String toString() {
             return switch (this) {

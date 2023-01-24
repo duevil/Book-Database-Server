@@ -15,52 +15,25 @@ import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
+/**
+ * Singleton-Klasse zum Öffnen und Verwalten der Datenbankverbindung
+ *
+ * @author Malte Kasolowsky <code>m30114</code>
+ */
 public final class DBConnection {
     private static final Logger LOGGER = Logger.getLogger("org.glassfish");
     private final Connection connection;
 
+    /**
+     * Konstruktor; öffnet eine neue {@link Connection Datenbankverbindung};
+     * versucht sich mittels der in den Properties Userdaten in die Datenbank einzuwählen.
+     * Falls dies scheitern sollte, wird die Eingabe des Datenbank-root-user-Passworts gefordert
+     * und die Datenbank initialisiert
+     *
+     * @throws SQLException Falls beim Öffnen der Verbindung eine solche Ausnahme geworfen wurde
+     */
     private DBConnection() throws SQLException {
-        connection = createConnection();
-    }
-
-    public static void executeResourceScript(String name) throws UncheckedIOException {
-        try (var is = ClassLoader.getSystemResourceAsStream(name)) {
-            ExecutorFactory.createScriptRunner(createStatement(), is).execute();
-        } catch (SQLException e) {
-            SQLExceptionHandler.handle(e, LOGGER);
-            throw new IllegalArgumentException("Unable to execute script file", e);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    public static Statement createStatement() {
-        try {
-            return Singleton.INSTANCE.dbCon.connection.createStatement();
-        } catch (SQLException e) {
-            SQLExceptionHandler.handle(e, LOGGER);
-            throw new NoSuchElementException("No statement was created", e);
-        }
-    }
-
-    public static PreparedStatement prepareStatement(String sql) {
-        try {
-            return Singleton.INSTANCE.dbCon.connection.prepareStatement(sql);
-        } catch (SQLException e) {
-            SQLExceptionHandler.handle(e, sql, LOGGER);
-            throw new NoSuchElementException("No prepared statement was created", e);
-        }
-    }
-
-    public static void close() {
-        try {
-            Singleton.INSTANCE.dbCon.connection.close();
-        } catch (SQLException e) {
-            SQLExceptionHandler.handle(e, LOGGER);
-        }
-    }
-
-    private static Connection createConnection() throws SQLException {
+        Connection con;
         ResourceBundle resources = ResourceBundle.getBundle("database");
         String baseUrl = resources.getString("baseUrl");
         String databaseName = resources.getString("databaseName");
@@ -68,7 +41,7 @@ public final class DBConnection {
         String password = resources.getString("password");
         String url = baseUrl + '/' + databaseName;
         try {
-            return DriverManager.getConnection(url, user, password);
+            con = DriverManager.getConnection(url, user, password);
         } catch (SQLException e) {
             SQLExceptionHandler.handle(e, LOGGER);
             LOGGER.info("""
@@ -86,14 +59,82 @@ public final class DBConnection {
             } catch (IOException ex) {
                 throw new UncheckedIOException(ex);
             }
+            con = DriverManager.getConnection(url, user, password);
         }
-        return DriverManager.getConnection(url, user, password);
+        connection = con;
     }
 
+    /**
+     * Führt eine sql-Ressourcendatei mittels eines
+     * {@link ExecutorFactory#createScriptRunner(Statement, java.io.InputStream) ScriptRunners} aus
+     *
+     * @param name Der Name des auszuführenden Scripts
+     * @throws UncheckedIOException Falls beim Öffnen der Ressource eine {@link IOException} geworfen wird
+     */
+    public static void executeResourceScript(String name) throws UncheckedIOException {
+        try (var is = ClassLoader.getSystemResourceAsStream(name)) {
+            ExecutorFactory.createScriptRunner(createStatement(), is).execute();
+        } catch (SQLException e) {
+            SQLExceptionHandler.handle(e, LOGGER);
+            throw new IllegalArgumentException("Unable to execute script file", e);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    /**
+     * Erstellt ein neues  {@link Statement}
+     *
+     * @return Ein neues Statement
+     */
+    public static Statement createStatement() {
+        try {
+            return Singleton.INSTANCE.dbCon.connection.createStatement();
+        } catch (SQLException e) {
+            SQLExceptionHandler.handle(e, LOGGER);
+            throw new NoSuchElementException("No statement was created", e);
+        }
+    }
+
+    /**
+     * Erstellt ein neues {@link PreparedStatement} mit dem übergebenen SQL-Befehl
+     *
+     * @param sql Der SQL-Befehl zum Initialisieren des Statements
+     * @return Ein neues PreparesStatement
+     */
+    public static PreparedStatement prepareStatement(String sql) {
+        try {
+            return Singleton.INSTANCE.dbCon.connection.prepareStatement(sql);
+        } catch (SQLException e) {
+            SQLExceptionHandler.handle(e, sql, LOGGER);
+            throw new NoSuchElementException("No prepared statement was created", e);
+        }
+    }
+
+    /**
+     * Schließt die Datenbankverbindung
+     */
+    public static void close() {
+        try {
+            Singleton.INSTANCE.dbCon.connection.close();
+        } catch (SQLException e) {
+            SQLExceptionHandler.handle(e, LOGGER);
+        }
+    }
+
+    /**
+     * Ein enum, welches die Singleton-Instanz der Klasse speichert;
+     * durch die Nutzung eines enums statt eines statischen Feldes sollte Multithreading-Sicherheit garantiert werden
+     */
     private enum Singleton {
         INSTANCE;
         private final DBConnection dbCon;
 
+        /**
+         * Erstellt eine {@link DBConnection#DBConnection() neue Klasseninstanz}
+         *
+         * @throws ExceptionInInitializerError Falls beim Erzeugen einer Instanz eine {@link SQLException} geworfen wird
+         */
         Singleton() throws ExceptionInInitializerError {
             try {
                 dbCon = new DBConnection();
