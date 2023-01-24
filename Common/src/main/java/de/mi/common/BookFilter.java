@@ -13,7 +13,6 @@ import java.util.Set;
  * @param authorSearch Eine Zeichenkette zur Suche innerhalb der Autorennamen
  * @author Malte Kasolowsky <code>m30114</code>
  */
-@SuppressWarnings("java:S1213")
 public record BookFilter(
         Set<Subfield> subfields,
         Range yearRange,

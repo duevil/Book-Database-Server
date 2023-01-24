@@ -21,7 +21,6 @@ import java.util.LinkedList;
  *
  * @author Malte Kasolowsky <code>m30114</code>
  */
-@SuppressWarnings({"java:S2211", "java:S1135"}) // TODO: remove suppression
 class RatingPane extends HBox {
     private static final Font FONT = Font.font(16D);
     private static final int MAX_RATING = Book.DEFAULT_RATING_RANGE.max();

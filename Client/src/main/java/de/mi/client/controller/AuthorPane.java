@@ -23,7 +23,6 @@ import java.util.LinkedList;
  *
  * @author Malte Kasolowsky <code>m30114</code>
  */
-@SuppressWarnings({"java:S2211", "java:S2972", "java:S134", "java:S3776", "java:S1135"}) // TODO: remove suppression
 class AuthorPane extends VBox {
     private static final double SPACING = 10D;
     private final ListProperty<AuthorProperties> authors

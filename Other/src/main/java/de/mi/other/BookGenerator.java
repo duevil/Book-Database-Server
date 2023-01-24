@@ -28,7 +28,6 @@ import java.util.stream.Stream;
  * da sie keine Bewertung erzeugt; zudem wird sie nicht mehr benötigt,
  * da die nötigen Daten bereits erzeugt wurden
  */
-@SuppressWarnings({"java:S109", "java:S1123", "java:S1133", "java:S1135"}) // TODO: remove suppression
 @Deprecated(since = "rating was added")
 public final class BookGenerator {
     private static final Random RND = new Random();
@@ -94,7 +93,6 @@ public final class BookGenerator {
      * @param args nicht benutzt
      * @throws IOException Wenn beim Schreiben des SQL-Script eine solche Ausnahme geworfen wird
      */
-    @SuppressWarnings("java:S2096")
     public static void main(String[] args) throws IOException {
         List<Book> bookList = generateBooks();
         writeToSQLFile(bookList);

@@ -114,7 +114,6 @@ public final class LiteratureUpdater {
     /**
      * enum, welches alle {@link Executor} zum Ausführen von einzelnen DML-Befehlen beinhaltet
      */
-    @SuppressWarnings({"java:S2972", "java:S1135"}) // TODO: remove suppression
     private enum Queries implements Executor<Integer> {
         DELETE_AUTHORS("""
                 DELETE FROM authors

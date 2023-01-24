@@ -16,7 +16,6 @@ import java.util.Set;
  * @param subfields Die Teilgebiete des Buches
  * @author Malte Kasolowsky <code>m30114</code>
  */
-@SuppressWarnings({"java:S1213", "java:S1135"}) // TODO: remove suppression
 public record Book(
         int id,
         String title,

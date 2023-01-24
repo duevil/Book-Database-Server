@@ -20,7 +20,6 @@ import java.util.Optional;
  *
  * @author Malte Kasolowsky <code>m30114</code>
  */
-@SuppressWarnings({"java:S2211", "java:S1135"}) // TODO: remove suppression
 abstract class ControllerBase {
     protected final BookProperties selectedBookProperties = new BookProperties();
     protected final FilterProperties filterProperties = new FilterProperties();

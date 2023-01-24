@@ -25,7 +25,6 @@ import java.util.stream.Stream;
  *
  * @author Malte Kasolowsky <code>m30114</code>
  */
-@SuppressWarnings({"java:S2211", "java:S3366", "java:S2972", "java:S3776", "java:S1135"}) // TODO: remove suppression
 class SubfieldPane extends VBox {
     private static final double SPACING = 10D;
     private final SetProperty<Subfield> subfieldsProperty

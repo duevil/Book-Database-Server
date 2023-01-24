@@ -22,7 +22,6 @@ import javafx.scene.layout.VBox;
  *
  * @author Malte Kasolowsky <code>m30114</code>
  */
-@SuppressWarnings({"java:S109", "java:S1820", "java:S3242", "java:S2211", "java:S1135"}) // TODO: remove suppression
 public final class Controller extends ControllerBase {
     @FXML
     public ScrollPane subfieldsFilterPane;

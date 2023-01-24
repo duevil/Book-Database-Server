@@ -8,7 +8,6 @@ import java.util.HashSet;
  *
  * @author Malte Kasolowsky <code>m30114</code>
  */
-@SuppressWarnings({"java:S109", "java:S1135"}) // TODO: remove suppression
 public final class BookFilterBuilder {
     private final HashSet<Subfield> subfields = new HashSet<>();
     private Range yearRange = Book.DEFAULT_YEAR_RANGE;
