@@ -1,5 +1,7 @@
 package de.mi.server;
 
+import com.mysql.cj.exceptions.MysqlErrorNumbers;
+import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import de.mi.server.sql.ExecutorFactory;
 import de.mi.server.sql.SQLExceptionHandler;
 
@@ -31,8 +33,10 @@ public final class DBConnection {
      * und die Datenbank initialisiert
      *
      * @throws SQLException Falls beim Öffnen der Verbindung eine solche Ausnahme geworfen wurde
+     * @throws IllegalStateException Wenn keine Verbindung zum Datenbankserver aufgebaut werden konnte
+     * oder die Eingabe des root-Passworts abgebrochen wurde
      */
-    private DBConnection() throws SQLException {
+    private DBConnection() throws SQLException, IllegalStateException {
         Connection con;
         ResourceBundle resources = ResourceBundle.getBundle("database");
         String baseUrl = resources.getString("baseUrl");
@@ -42,15 +46,20 @@ public final class DBConnection {
         String url = baseUrl + '/' + databaseName;
         try {
             con = DriverManager.getConnection(url, user, password);
+        } catch (CommunicationsException e) {
+            throw new IllegalStateException("Connection to Database Server could not be established", e);
         } catch (SQLException e) {
-            SQLExceptionHandler.handle(e, LOGGER);
+            if (e.getErrorCode() != MysqlErrorNumbers.ER_BAD_DB_ERROR) throw e;
+
             LOGGER.info("""
-                    Database properly does not exist.
+                    Database was not found because it properly does not exist.
                     Trying to connect to root server and to create database and user...""");
             String pass = JOptionPane.showInputDialog("""
-                    The 'Informatik'-database does not exist and needs to be created.
+                    The 'Informatik'-database could not be found and needs to be created.
+                                            
                     Please enter the database server's root password to allow creation.
                     The password will not be saved and no further actions will be performed.""");
+
             if (pass == null) throw new IllegalStateException("password input was canceled");
 
             try (Connection c = DriverManager.getConnection(baseUrl, "root", pass);
@@ -117,6 +126,7 @@ public final class DBConnection {
     public static void close() {
         try {
             Singleton.INSTANCE.dbCon.connection.close();
+            LOGGER.info("Database connection closed");
         } catch (SQLException e) {
             SQLExceptionHandler.handle(e, LOGGER);
         }

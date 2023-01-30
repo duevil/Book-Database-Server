@@ -61,11 +61,13 @@ public final class SQLExceptionHandler {
      */
     public static void handle(SQLException e, Logger logger) throws IllegalArgumentException {
         if (e == null) throw new IllegalArgumentException("exception to be handled must not be null");
-        logger.log(Level.WARNING, e, () -> String.format(
-                "A SQL exception was thrown [SQL state = %s, error code = %d]",
-                e.getSQLState(),
-                e.getErrorCode()
-        ));
+        for (var thrown : e) {
+            logger.log(Level.WARNING, e, (() -> thrown == e ? String.format(
+                    "A SQL exception was thrown [SQL state = %s, error code = %d]",
+                    e.getSQLState(),
+                    e.getErrorCode()
+            ) : "Causing exception"));
+        }
     }
 
     /**
