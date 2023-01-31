@@ -14,6 +14,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -131,6 +132,7 @@ class SubfieldPane extends VBox {
             var items = FXCollections.observableArrayList(options);
             final ComboBox<Subfield> comboBox = new ComboBox<>(items);
             comboBox.setCursor(Cursor.HAND);
+            comboBox.setConverter(new SubfieldStringConverter());
 
             subfieldProperty = comboBox.valueProperty();
             subfieldProperty.setValue(subfield);
@@ -148,7 +150,8 @@ class SubfieldPane extends VBox {
                 else subfieldsProperty.remove(subfieldProperty.get());
             });
 
-            final Label label = new Label(subfield.toString());
+            final Label label = new Label();
+            label.textProperty().bindBidirectional(subfieldProperty, new SubfieldStringConverter());
             final var children = super.getChildren();
 
             editableProperty.addListener((observable, oldValue, newValue) -> {
@@ -159,6 +162,39 @@ class SubfieldPane extends VBox {
 
             if (editableProperty.get()) children.addAll(comboBox, removeButton);
             else children.add(label);
+        }
+
+    }
+
+    /**
+     * Ein einfacher {@link StringConverter} zum Umwandeln
+     * eines {@link Subfield Teilgebiets} in eine Zeichenkette und zurück
+     */
+    private final class SubfieldStringConverter extends StringConverter<Subfield> {
+
+        /**
+         * Wandelt ein {@link Subfield} in eine Zeichenkette um; gibt den Namen des Teilgebiets zurück
+         *
+         * @param s Das umzuwandelnde Teilgebiet
+         * @return Den Namen des Teilgebiets
+         */
+        @Override
+        public String toString(Subfield s) {
+            return s.name();
+        }
+
+        /**
+         * Wandelt eine Zeichenkette in ein {@link Subfield} um;
+         * sucht in den gespeicherten Teilgebiet-Optionen nach dem Teilgebiet,
+         * dessen Name mit dem der gegebenen Zeichenkette übereinstimmt
+         *
+         * @param s Die umzuwandelnde Zeichenkette
+         * @return Das der gegebenen Zeichenkette entsprechende Teilgebiet
+         * @throws java.util.NoSuchElementException Wenn kein passendes Teilgebiet gefunden werden konnte
+         */
+        @Override
+        public Subfield fromString(String s) {
+            return options.stream().filter(o -> o.name().equals(s)).findFirst().orElseThrow();
         }
     }
 }

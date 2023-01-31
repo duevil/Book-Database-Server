@@ -49,13 +49,13 @@ public record Subfield(int id, String name) implements Comparable<Subfield> {
 
     /**
      * Erzeugt eine Repräsentation des Teilgebietes als Zeichenkette,
-     * wobei die Zeichenkette schlicht aus dem Namen des Teilgebietes besteht
+     * wobei die Zeichenkette aus dem Namen und der ID des Teilgebietes besteht
      *
-     * @return Der Name des Teilgebietes
+     * @return Der Name und die ID des Teilgebietes
      */
     @Override
     public String toString() {
-        return name;
+        return String.format("%s [%d]", name, id);
     }
 
     /**

@@ -127,7 +127,7 @@ public final class LiteratureQuery {
     public static Set<Book> queryBooks(BookFilter filter) throws SQLException {
         final String bookSQL = String.format(
                 BOOK_SQL,
-                Optional.ofNullable(filter.titleSearch()).orElse(""),
+                Optional.ofNullable(filter.titleSearch()).map(String::toLowerCase).orElse(""),
                 filter.yearRange().min(),
                 filter.yearRange().max(),
                 filter.pageRange().min(),
@@ -142,7 +142,7 @@ public final class LiteratureQuery {
                         .map(Subfield::id)
                         .map(String::valueOf)
                         .collect(Collectors.joining(",")),
-                Optional.ofNullable(filter.authorSearch()).orElse("")
+                Optional.ofNullable(filter.authorSearch()).map(String::toLowerCase).orElse("")
         );
 
         try (var statement = DBConnection.createStatement()) {

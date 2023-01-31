@@ -46,12 +46,12 @@ public record Author(int id, String firstName, String lastName) {
 
     /**
      * Erzeugt eine Repräsentation des Autors als Zeichenkette,
-     * wobei die Zeichenkette aus Vor- und Nachname des Autors besteht
+     * wobei die Zeichenkette aus Vor-, Nachname und ID des Autors besteht
      *
-     * @return Vor- und Nachname des Autors mit einem Leerzeichen getrennt
+     * @return Eine Zeichenkette aus Vor-, Nachname und ID des Autors
      */
     @Override
     public String toString() {
-        return firstName + ' ' + lastName;
+        return String.format("%s %s [%d]", firstName, lastName, id);
     }
 }

@@ -8,6 +8,7 @@ import de.mi.server.sql.ExecutorFactory;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.logging.Logger;
 
 /**
  * Utility-Klasse mit Funktionen zum Manipulieren von Literatur-Daten aus der Datenbank (DML)
@@ -15,6 +16,7 @@ import java.sql.SQLException;
  * @author Malte Kasolowsky <code>m30114</code>
  */
 public final class LiteratureUpdater {
+    private static final Logger LOGGER = Logger.getLogger("org.glassfish");
 
     /**
      * Privater Konstruktor; eine Erzeugung einer Klassen-Instanz ist nicht nötig
@@ -57,6 +59,8 @@ public final class LiteratureUpdater {
         for (Subfield subfield : old.get().subfields()) {
             if (!book.subfields().contains(subfield)) Queries.DELETE_BOOK_SUBFIELD.execute(book.id(), subfield.id());
         }
+
+        LOGGER.info(() -> "Potentially updated a book on the database: %s".formatted(book));
     }
 
     /**
@@ -70,6 +74,8 @@ public final class LiteratureUpdater {
         Queries.DELETE_BOOK_AUTHORS_ALL.execute(id);
         Queries.DELETE_BOOK_SUBFIELDS_ALL.execute(id);
         Queries.DELETE_AUTHORS.execute();
+
+        LOGGER.info(() -> "Potentially deleted a book from the database with the id [%d]".formatted(id));
     }
 
     /**
@@ -95,6 +101,8 @@ public final class LiteratureUpdater {
         for (Subfield subfield : book.subfields()) {
             Queries.INSERT_BOOK_SUBFIELDS.execute(inserted.id(), subfield.id());
         }
+
+        LOGGER.info(() -> "Insert a new book into the database: %s".formatted(book));
     }
 
     /**
@@ -109,6 +117,8 @@ public final class LiteratureUpdater {
         Author inserted = LiteratureQuery.queryAuthorByName(author.firstName(), author.lastName());
         if (inserted == null) throw new IllegalStateException("Unable to find inserted author: " + author);
         Queries.INSERT_BOOK_AUTHORS.execute(book.id(), inserted.id());
+
+        LOGGER.info(() -> "Inserted a new author into the database: %s".formatted(author));
     }
 
     /**

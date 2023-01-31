@@ -174,6 +174,8 @@ abstract class ControllerBase {
      * <p>
      * Wenn der {@link State} des Controllers nicht {@link State#NONE} ist,
      * so wird eine {@link ControllerBase#alertCantPerformAction(String) Fehlermeldung angezeigt}
+     *
+     * @throws Util.PropertyException Wenn beim Auslesen der eingegebenen Buchdaten eine solche Ausnahme auftritt
      */
     private void createBook() {
         switch (state.get()) {
@@ -195,6 +197,8 @@ abstract class ControllerBase {
      * <p>
      * Wenn der {@link State} des Controllers nicht {@link State#NONE} ist,
      * so wird eine {@link ControllerBase#alertCantPerformAction(String) Fehlermeldung angezeigt}
+     *
+     * @throws Util.PropertyException Wenn beim Auslesen der eingegebenen Buchdaten eine solche Ausnahme auftritt
      */
     private void deleteBook() {
         if (state.get() == State.NONE) {
@@ -203,7 +207,7 @@ abstract class ControllerBase {
                     Alert.AlertType.CONFIRMATION,
                     null,
                     new ButtonType("Delete", ButtonBar.ButtonData.OK_DONE),
-                    new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE));
+                    ButtonType.CANCEL);
             alert.setHeaderText("Confirm Deletion");
             alert.setContentText("Should the book '" +
                                  selectedBookProperties.titleProperty().get() +
@@ -211,10 +215,12 @@ abstract class ControllerBase {
             alert.showAndWait()
                     .map(ButtonType::getButtonData)
                     .map(t -> t.isDefaultButton() ? selectedBookProperties.get() : null)
-                    .ifPresent(model::deleteBook);
-            state.set(State.NONE);
-            selectedBook.set(null);
-            loadBooks(false);
+                    .ifPresent((Book book) -> {
+                        model.deleteBook(book);
+                        state.set(State.NONE);
+                        selectedBook.set(null);
+                        loadBooks(false);
+                    });
         } else alertCantPerformAction(State.DELETING.toString());
     }
 
@@ -224,6 +230,7 @@ abstract class ControllerBase {
      *
      * @return Ein {@link Optional}, welches einen {@link BookFilter} enthält,
      * sollte dieser erfolgreich ausgelesen worden sein, ansonsten ein {@link Optional#empty() leeres Optional}
+     * @throws Util.PropertyException Wenn beim Auslesen der eingegebenen Buchdaten eine solche Ausnahme auftritt
      */
     private Optional<BookFilter> getFilter() {
         try {

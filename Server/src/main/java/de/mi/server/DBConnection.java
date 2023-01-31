@@ -5,7 +5,6 @@ import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import de.mi.server.sql.ExecutorFactory;
 import de.mi.server.sql.SQLExceptionHandler;
 
-import javax.swing.JOptionPane;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.sql.Connection;
@@ -24,6 +23,7 @@ import java.util.logging.Logger;
  */
 public final class DBConnection {
     private static final Logger LOGGER = Logger.getLogger("org.glassfish");
+
     private final Connection connection;
 
     /**
@@ -32,18 +32,19 @@ public final class DBConnection {
      * Falls dies scheitern sollte, wird die Eingabe des Datenbank-root-user-Passworts gefordert
      * und die Datenbank initialisiert
      *
-     * @throws SQLException Falls beim Öffnen der Verbindung eine solche Ausnahme geworfen wurde
+     * @throws SQLException          Falls beim Öffnen der Verbindung eine solche Ausnahme geworfen wurde
      * @throws IllegalStateException Wenn keine Verbindung zum Datenbankserver aufgebaut werden konnte
-     * oder die Eingabe des root-Passworts abgebrochen wurde
+     *                               oder die Eingabe des root-Passworts abgebrochen wurde
      */
     private DBConnection() throws SQLException, IllegalStateException {
         Connection con;
         ResourceBundle resources = ResourceBundle.getBundle("database");
         String baseUrl = resources.getString("baseUrl");
-        String databaseName = resources.getString("databaseName");
+        String port = resources.getString("port");
+        String databaseName = resources.getString("name");
         String user = resources.getString("user");
         String password = resources.getString("password");
-        String url = baseUrl + '/' + databaseName;
+        String url = String.format("%s:%s/%s", baseUrl, port, databaseName);
         try {
             con = DriverManager.getConnection(url, user, password);
         } catch (CommunicationsException e) {
@@ -51,25 +52,29 @@ public final class DBConnection {
         } catch (SQLException e) {
             if (e.getErrorCode() != MysqlErrorNumbers.ER_BAD_DB_ERROR) throw e;
 
-            LOGGER.info("""
+            LOGGER.warning(() -> """
+                    Unable to connect to database at [%s]
                     Database was not found because it properly does not exist.
-                    Trying to connect to root server and to create database and user...""");
-            String pass = JOptionPane.showInputDialog("""
+                    Trying to connect to root server and to create database and user...""".formatted(url));
+            String pass = ConsolePrompter.prompt("""
                     The 'Informatik'-database could not be found and needs to be created.
-                                            
                     Please enter the database server's root password to allow creation.
                     The password will not be saved and no further actions will be performed.""");
-
-            if (pass == null) throw new IllegalStateException("password input was canceled");
-
+            LOGGER.info(() -> String.format(
+                    "Connecting to root and creating database '%s' and user '%s'",
+                    databaseName,
+                    user
+            ));
             try (Connection c = DriverManager.getConnection(baseUrl, "root", pass);
                  var is = ClassLoader.getSystemResourceAsStream("informatik-schema.sql")) {
                 ExecutorFactory.createScriptRunner(c.createStatement(), is).execute();
+                LOGGER.info("Database and user created. Retrying initial connection attempt");
             } catch (IOException ex) {
                 throw new UncheckedIOException(ex);
             }
             con = DriverManager.getConnection(url, user, password);
         }
+        LOGGER.info(() -> "Connected to database at [%s]".formatted(url));
         connection = con;
     }
 

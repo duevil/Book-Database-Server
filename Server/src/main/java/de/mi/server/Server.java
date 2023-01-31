@@ -6,15 +6,14 @@ import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Klasse zum Starten des REST-Servers
+ *
+ * @author Malte Kasolowsky <code>m30114</code>
  */
 final class Server {
     private static final Logger LOGGER = Logger.getLogger("org.glassfish");
@@ -53,14 +52,7 @@ final class Server {
         LOGGER.info("Waiting for server shutdown confirmation...");
         String input;
         do {
-            System.out.println("\u001B[34mEnter 'STOP' to shutdown the server...\u001B[0m");
-            try (var os = new ByteArrayOutputStream()) {
-                do os.write(System.in.read());
-                while (System.in.available() > 0);
-                input = os.toString(Charset.defaultCharset()).strip();
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+            input = ConsolePrompter.prompt("At any time, enter 'STOP' to shutdown the server...");
         } while (!"STOP".equals(input));
         LOGGER.info("Server stopped");
     }

@@ -15,6 +15,7 @@ import java.util.Map;
  * Implementiert einen {@link Executor} zum Ausführen einer Daten-Query
  *
  * @param <T> Der Objekttyp, der aus den geladenen Daten erzeugt werden soll
+ * @author Malte Kasolowsky <code>m30114</code>
  */
 class QueryExecutor<T> extends ExecutorBase<List<T>> {
     private final Mapper<T> mapper;

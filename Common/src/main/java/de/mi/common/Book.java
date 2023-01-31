@@ -76,12 +76,12 @@ public record Book(
 
     /**
      * Erzeugt eine Repräsentation des Buches als Zeichenkette,
-     * wobei die Zeichenkette aus Title, Erscheinungsjahr und Verleger des Buches besteht
+     * wobei die Zeichenkette aus Title, Erscheinungsjahr, Verleger und ID des Buches besteht
      *
-     * @return Eine Zeichenkette mit Title, Erscheinungsjahr und Verleger des Buches
+     * @return Eine Zeichenkette mit Title, Erscheinungsjahr, Verleger und ID des Buches
      */
     @Override
     public String toString() {
-        return String.format("%s (%d, %s)", title, year, publisher);
+        return String.format("%s (%d, %s) [%d]", title, year, publisher, id);
     }
 }
