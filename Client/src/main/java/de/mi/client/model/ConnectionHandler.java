@@ -79,7 +79,8 @@ final class ConnectionHandler {
     }
 
     /**
-     * Führt eine {@link Connection}-Methode aus, welche ein Argument übergeben bekommt und Ergebnis zurückgibt
+     * Führt eine {@link Connection}-Methode, welche ein Argument übergeben bekommt und Ergebnis zurückgibt,
+     * mittels einer {@link Service} aus
      *
      * @param functionArgument   Ein Argument, welches der Verbindungsmethode übergeben wird
      * @param connectionFunction Die Methode der Verbindung, welche ausgeführt werden soll
@@ -87,8 +88,6 @@ final class ConnectionHandler {
      * @param onFailAction       Ein {@link Runnable}, welches beim Auftreten eines Fehlers ausgeführt wird
      * @param <R>                Der Typ des Arguments für die Anfrage
      * @param <T>                Der Typ der Rückgabe der Anfrage
-     * @apiNote Diese Methode wird <b>nicht</b> über eine {@link Service} ausgeführt,
-     * da es aus unbekannten Gründen zu diversen Fehlern beim Aufruf von JDBC-Methoden auf dem Server kommt
      */
     public <R, T> void handle(R functionArgument,
                               BiFunction<Connection, R, T> connectionFunction,
@@ -109,13 +108,14 @@ final class ConnectionHandler {
     }
 
     /**
-     * Führt eine {@link Connection}-Methode, welche ein Argument übergeben bekommt,
-     * mittels einer {@link Service} aus
+     * Führt eine {@link Connection}-Methode, welche ein Argument übergeben bekommt, aus
      *
      * @param functionArgument   Ein Argument, welches der Verbindungsmethode übergeben wird
      * @param connectionFunction Die Methode der Verbindung, welche ausgeführt werden soll
      * @param onFailAction       Ein {@link Runnable}, welches beim Auftreten eines Fehlers ausgeführt wird
      * @param <R>                Der Typ des Arguments für die Anfrage
+     * @apiNote Diese Methode wird <b>nicht</b> über eine {@link Service} ausgeführt,
+     * da es aus unbekannten Gründen zu diversen Fehlern beim Aufruf von JDBC-Methoden auf dem Server kommt
      */
     public <R> void handle(R functionArgument,
                            BiConsumer<Connection, R> connectionFunction,
