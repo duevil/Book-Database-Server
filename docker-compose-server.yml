@@ -1,0 +1,31 @@
+volumes:
+  database_savings:
+  server_logs:
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: informatik
+      MYSQL_USER: minf
+      MYSQL_PASSWORD: prog3
+    volumes:
+      - database_savings:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 10s
+      retries: 10
+      # due to healthcheck it will often take a while until the server is started
+    restart: always
+  server:
+    image: server-swz
+    volumes:
+      - server_logs:/opt/app/logs
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy # wait until db is ready
+        restart: true

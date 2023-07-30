@@ -1,0 +1,73 @@
+{
+  "configuration": {
+    "status": "error",
+    "name": "ClientMain",
+    "package": "de.mi.swz",
+    "ThresholdFilter": {
+      "level": "debug"
+    },
+    "appenders": {
+      "Console": {
+        "name": "STDOUT",
+        "PatternLayout": {
+          "pattern": "[%p] %d [%t] %l - %m%n"
+        }
+      },
+      "RollingFile": {
+        "name": "RollingFile",
+        "fileName": "ClientSWZ.log",
+        "filePattern": "ClientSWZ-backups-%d{yy-MM-dd-HH-mm-ss}-%i.log.gz",
+        "PatternLayout": {
+          "pattern": "[%p] %d [%t] %l - %m%n"
+        },
+        "Policies": {
+          "SizeBasedTriggeringPolicy": {
+            "size": "10 MB"
+          }
+        },
+        "DefaultRolloverStrategy": {
+          "max": "5"
+        }
+      }
+    },
+    "loggers": {
+      "logger": [
+        {
+          "name": "de.mi.client.Client",
+          "level": "info"
+        },
+        {
+          "name": "de.mi.client.ExceptionHandler",
+          "level": "info"
+        },
+        {
+          "name": "de.mi.client.model",
+          "level": "info"
+        },
+        {
+          "name": "de.mi.client.controller",
+          "level": "info"
+        },
+        {
+          "name": "javafx",
+          "level": "fatal"
+        },
+        {
+          "name": "org.glassfish",
+          "level": "info"
+        }
+      ],
+      "root": {
+        "level": "all",
+        "AppenderRef": [
+          {
+            "ref": "STDOUT"
+          },
+          {
+            "ref": "RollingFile"
+          }
+        ]
+      }
+    }
+  }
+}

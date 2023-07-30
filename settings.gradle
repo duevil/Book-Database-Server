@@ -1,6 +1,0 @@
-rootProject.name = 'Semesterabgabe_Prog3_2022'
-include 'Client'
-include 'Common'
-include 'Server'
-include 'Other'
-

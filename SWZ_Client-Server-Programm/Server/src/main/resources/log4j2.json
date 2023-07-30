@@ -1,0 +1,81 @@
+{
+  "configuration": {
+    "status": "error",
+    "name": "ServerMain",
+    "package": "de.mi.swz",
+    "ThresholdFilter": {
+      "level": "debug"
+    },
+    "appenders": {
+      "Console": {
+        "name": "STDOUT",
+        "PatternLayout": {
+          "pattern": "[%p] [%t] %l - %m%n"
+        }
+      },
+      "RollingFile": {
+        "name": "RollingFile",
+        "fileName": "logs/ServerSWZ.log",
+        "filePattern": "logs/backups/ServerSWZ-backups-%d{yy-MM-dd-HH-mm-ss}-%i.log.gz",
+        "PatternLayout": {
+          "pattern": "[%p] %d [%t] %l - %m%n"
+        },
+        "Policies": {
+          "SizeBasedTriggeringPolicy": {
+            "size": "10 MB"
+          }
+        },
+        "DefaultRolloverStrategy": {
+          "max": "5"
+        }
+      }
+    },
+    "loggers": {
+      "logger": [
+        {
+          "name": "de.mi.server.Server",
+          "level": "info"
+        },
+        {
+          "name": "de.mi.server.DBConnection",
+          "level": "info"
+        },
+        {
+          "name": "de.mi.server.LiteratureQuery",
+          "level": "info"
+        },
+        {
+          "name": "de.mi.server.LiteratureUpdater",
+          "level": "info"
+        },
+        {
+          "name": "de.mi.server.rest",
+          "level": "info"
+        },
+        {
+          "name": "de.mi.server.sql",
+          "level": "off"
+        },
+        {
+          "name": "org.glassfish",
+          "level": "warn"
+        },
+        {
+          "name": "jakarta.xml.bind",
+          "level": "warn"
+        }
+      ],
+      "root": {
+        "level": "all",
+        "AppenderRef": [
+          {
+            "ref": "STDOUT"
+          },
+          {
+            "ref": "RollingFile"
+          }
+        ]
+      }
+    }
+  }
+}

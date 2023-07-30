@@ -1,5 +1,0 @@
-dependencies {
-    implementation project(':Common')
-    implementation project(':Server')
-    implementation 'com.github.javafaker:javafaker:1.0.2'
-}

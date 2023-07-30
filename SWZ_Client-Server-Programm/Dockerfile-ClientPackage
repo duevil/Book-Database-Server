@@ -1,0 +1,14 @@
+FROM maven:3.9.3-eclipse-temurin-17 AS build
+RUN mkdir -p /opt/app
+COPY . /opt/app/
+WORKDIR /opt/app/
+RUN mvn install
+
+FROM eclipse-temurin:17-jdk
+RUN mkdir /opt/app
+COPY --from=build /opt/app/Client/target/Client-2.0.jar /opt/app
+COPY --from=build /opt/app/Client/target/libs /opt/app/libs
+WORKDIR /opt/app
+RUN apt-get update
+RUN apt-get install -y fakeroot
+CMD ["jpackage","--input","/opt/app","--name","ClientSWZ","--main-jar","Client-2.0.jar","--main-class","de.mi.client.Main","--app-version","2.0","--vendor","Hochschule Harz"]
